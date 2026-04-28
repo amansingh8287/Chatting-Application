@@ -1,0 +1,25 @@
+# dependencies (ALL folders)
+node_modules
+frontend/node_modules
+backkend/node_modules
+
+# build
+build
+frontend/build
+backkend/build
+
+# env files
+.env
+frontend/.env
+backkend/.env
+
+# testing
+coverage
+
+# misc
+.DS_Store
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
