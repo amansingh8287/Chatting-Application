@@ -52,7 +52,7 @@ app.use(cookieParser());
 
 // ✅ CORS FIX (IMPORTANT)
 app.use(cors({
-  origin: "https://your-app.vercel.app", // 👈 yaha apna Vercel URL daalo
+  origin: "chatting-application-4yur-3gv84hfph.vercel.app", // 👈 yaha apna Vercel URL daalo
   credentials: true
 }));
 
