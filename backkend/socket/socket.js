@@ -6,12 +6,14 @@ const app = express();
 
 const server = http.createServer(app);
 const io = new Server(server, {
-        cors:{
-            origin: "https://chatting-application-4yur-3gv84hfph.vercel.app",
-            methods: ['GET', 'POST'],
-            credentials: true
-        },
-    
+  cors: {
+    origin: [
+      "https://chatting-application-4yur.vercel.app",
+      "https://chatting-application-4yur-3gv84hfph.vercel.app"
+    ],
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
 });
 
 export const getReceiverSocketId = (receiverId) => {
