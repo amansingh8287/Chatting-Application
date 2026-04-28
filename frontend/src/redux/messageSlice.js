@@ -22,15 +22,17 @@ const messageSlice = createSlice({
     messages: [],
   },
   reducers: {
+    // ✅ full replace (API call ke liye)
     setMessages: (state, action) => {
-      state.messages = action.payload;
+      state.messages = action.payload || [];
     },
+
+    // 🔥 realtime ke liye BEST
     addMessage: (state, action) => {
-     if (!Array.isArray(state.messages)) {
-       state.messages = [];
-     }
-     state.messages.push(action.payload);
+      state.messages.push(action.payload);
     },
+
+    // chat change hone par clear
     clearMessages: (state) => {
       state.messages = [];
     },
