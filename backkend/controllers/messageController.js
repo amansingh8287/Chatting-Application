@@ -2,6 +2,7 @@ import { Conversation } from "../models/conversationmodel.js";
 import { Message } from "../models/messagemodel.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
 
+// ✅ SEND MESSAGE
 export const sendMessage = async (req, res) => {
     try {
         const senderId = req.id;
@@ -22,7 +23,7 @@ export const sendMessage = async (req, res) => {
             senderId,
             receiverId,
             message,
-            seen: false // ✅ new field
+            seen: false
         });
 
         if (newMessage) {
@@ -39,6 +40,24 @@ export const sendMessage = async (req, res) => {
         }
 
         return res.status(201).json({ newMessage });
+
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+
+// ✅ GET MESSAGES (🔥 THIS WAS MISSING)
+export const getMessage = async (req, res) => {
+    try {
+        const receiverId = req.params.id;
+        const senderId = req.id;
+
+        const conversation = await Conversation.findOne({
+            participants: { $all: [senderId, receiverId] }
+        }).populate("messages");
+
+        return res.status(200).json(conversation?.messages || []);
 
     } catch (error) {
         console.log(error);
