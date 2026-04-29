@@ -47,6 +47,13 @@ io.on('connection', (socket) => {
 
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
     });
+
+    socket.on("typing", (receiverId) => {
+         const receiverSocketId = getReceiverSocketId(receiverId);
+        if (receiverSocketId) {
+              io.to(receiverSocketId).emit("typing");
+        }
+    });
 });
 
 export {app, io, server};
