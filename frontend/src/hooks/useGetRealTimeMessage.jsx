@@ -16,31 +16,32 @@
 // export default useGetRealTimeMessage;
 
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setMessages } from "../redux/messageSlice";
 import { addMessage } from "../redux/messageSlice";
 import { socket } from "../socket";
 
 const useGetRealTimeMessage = () => {
   const dispatch = useDispatch();
-  const { selectedUser } = useSelector(store => store.user);
+  const { authUser } = useSelector(store => store.user);
 
   useEffect(() => {
-    socket.off("newMessage");
 
-    socket.on("newMessage", (newMessage) => {
+    socket.off("messageSeen");
 
-      // 🔥 IMPORTANT FILTER
-      if (
-        newMessage.senderId === selectedUser?._id ||
-        newMessage.receiverId === selectedUser?._id
-      ) {
-        dispatch(addMessage(newMessage));
-      }
-
+    socket.on("messageSeen", () => {
+      dispatch(setMessages(prev =>
+        prev.map(msg =>
+          msg.senderId === authUser._id
+            ? { ...msg, seen: true }
+            : msg
+        )
+      ));
     });
 
-    return () => socket.off("newMessage");
-  }, [selectedUser]);
+    return () => socket.off("messageSeen");
+
+  }, [authUser]);
 };
 
 export default useGetRealTimeMessage;

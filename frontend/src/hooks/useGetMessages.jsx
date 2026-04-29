@@ -42,24 +42,26 @@ const useGetMessages = () => {
 
     const fetchMessages = async () => {
       try {
-        axios.defaults.withCredentials = true;
-
         const res = await axios.get(
-          `${BASE_URL}/api/v1/message/${selectedUser._id}`
+          `${BASE_URL}/api/v1/message/${selectedUser._id}`,
         );
 
-        // ✅ safe data set
-        dispatch(setMessages(res.data || []));
+        dispatch(setMessages(res.data));
+
+        // 🔥 MARK AS SEEN
+        await axios.put(
+          `${BASE_URL}/api/v1/message/seen/${selectedUser._id}`,
+          {},
+          { withCredentials: true },
+        );
       } catch (error) {
-        console.log("Error fetching messages:", error);
-        dispatch(setMessages([])); // fallback
+        console.log(error);
       }
     };
 
     // 🔥 pehle clear karo phir fetch
     dispatch(clearMessages());
     fetchMessages();
-
   }, [selectedUser?._id, dispatch]);
 };
 

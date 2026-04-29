@@ -73,6 +73,7 @@ import { useEffect } from 'react';
 import { useSelector, useDispatch } from "react-redux";
 import { socket } from "./socket";
 import { setOnlineUsers } from './redux/userSlice';
+import UserProfileModal from "./components/UserProfileModal";
 
 const router = createBrowserRouter([
   { path: "/", element: <HomePage /> },
@@ -108,6 +109,8 @@ function App() {
   return (
     <div className="h-screen w-full">
       <RouterProvider router={router} />
+      {/* 🔥 PROFILE MODAL */}
+      <UserProfileModal />
     </div>
   );
 }

@@ -82,7 +82,7 @@ const MessageContainer = () => {
             {
                 selectedUser !== null ? (
                     <div
-                        className="h-full w-full flex flex-col relative rounded-xl overflow-hidden  bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl"
+                        className="h-full w-full flex flex-col relative rounded-xl overflow-hidden bg-white/10 backdrop-blur-[2px] border border-white/20 shadow-2xl"
                         style={{
                             backgroundImage: `url(${chatBg})`,
                             backgroundSize: "cover",
@@ -91,7 +91,7 @@ const MessageContainer = () => {
                     >
 
                         {/* 🔥 overlay */}
-                        <div className="absolute inset-0 bg-white/60 backdrop-blur-md"></div>
+                        <div className="absolute inset-0 bg-black/15 backdrop-blur-[2px]"></div>
 
                         {/* 🔥 content */}
                         <div className="relative z-10 flex flex-col h-full">

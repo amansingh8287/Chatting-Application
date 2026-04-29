@@ -80,9 +80,9 @@ const Message = ({ message }) => {
                     {/* ✔✔ SEEN */}
                     {isMe && (
                         message?.seen ? (
-                            <span className="text-blue-400 text-xs">✔✔</span>
+                            <span className="text-blue-500 text-xs">✔✔</span>
                         ) : (
-                            <span className="text-gray-300 text-xs">✔</span>
+                            <span className="text-gray-400 text-xs">✔</span>
                         )
                     )}
 
