@@ -55,6 +55,7 @@ import Messages from './Messages';
 import { useSelector,useDispatch } from "react-redux";
 import { setSelectedUser } from '../redux/userSlice';
 import { socket } from "../socket";
+import chatBg from "../assets/chat-bg.jpg";
 
 const MessageContainer = () => {
     const { selectedUser, authUser, onlineUsers } = useSelector(store => store.user);
@@ -83,7 +84,7 @@ const MessageContainer = () => {
                     <div
                         className="h-full w-full flex flex-col relative rounded-xl overflow-hidden  bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl"
                         style={{
-                            backgroundImage: `url("/src/assets/chat-bg.jpg")`,
+                            backgroundImage: `url(${chatBg})`,
                             backgroundSize: "cover",
                             backgroundPosition: "center"
                         }}
