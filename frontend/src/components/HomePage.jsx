@@ -13,14 +13,14 @@ const HomePage = () => {
     }
   }, []);
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row">
+    <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden">
       {/* Sidebar */}
-      <div className="w-full md:w-[300px] h-[40%] md:h-full">
+      <div className="w-full md:w-[300px] h-[45%] md:h-full">
         <Sidebar />
       </div>
 
       {/* Chat */}
-      <div className="flex-1 h-[60%] md:h-full">
+      <div className="flex-1 h-[55%] md:h-full">
         <MessageContainer />
       </div>
     </div>
