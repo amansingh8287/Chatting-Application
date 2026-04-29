@@ -97,7 +97,7 @@ const MessageContainer = () => {
                         <div className="relative z-10 flex flex-col h-full">
 
                             {/* HEADER */}
-                            <div className='flex gap-2 items-center px-4 py-2 bg-black/40 backdrop-blur-md border-b border-white/20 text-black'>
+                            <div className='flex gap-2 items-center px-4 py-2 bg-white/20 backdrop-blur-md border-b border-white/20 text-black'>
                                 <img
                                     src={selectedUser?.profilePhoto}
                                     className="w-10 h-10 rounded-full"
