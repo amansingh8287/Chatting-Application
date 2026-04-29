@@ -72,13 +72,15 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setAuthUser, setOtherUsers, setSelectedUser } from '../redux/userSlice';
-import { setMessages } from '../redux/messageSlice';
 import { clearMessages } from "../redux/messageSlice";
 import { BASE_URL } from '..';
 
 const Sidebar = () => {
     const [search, setSearch] = useState("");
-    const { otherUsers } = useSelector(store => store.user);
+
+    // ✅ ADD THIS
+    const { otherUsers, authUser } = useSelector(store => store.user);
+
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -113,7 +115,21 @@ const Sidebar = () => {
     }
 
     return (
-       <div className="h-full w-full flex flex-col p-3 md:p-4 bg-white/20 backdrop-blur-lg border-r border-slate-400">
+        <div className="h-full w-full flex flex-col p-3 md:p-4 bg-white/20 backdrop-blur-lg border-r border-slate-400">
+
+            {/* 👤 MY PROFILE */}
+            <div className="flex items-center gap-3 mb-4 p-2 bg-white/30 backdrop-blur-md rounded-lg">
+                <img
+                    src={authUser?.profilePhoto || "/default.png"}
+                    alt="me"
+                    className="w-10 h-10 rounded-full object-cover"
+                />
+
+                <div>
+                    <p className="font-semibold text-sm">{authUser?.fullName}</p>
+                    <span className="text-green-500 text-xs">You</span>
+                </div>
+            </div>
 
             {/* 🔍 SEARCH */}
             <form onSubmit={searchSubmitHandler} className='flex items-center gap-2 mb-4'>
@@ -130,7 +146,7 @@ const Sidebar = () => {
                 </button>
             </form>
 
-            {/* 🔥 USER LIST (FIXED) */}
+            {/* 👥 USER LIST */}
             <div className="flex-1 overflow-y-auto">
                 <OtherUsers />
             </div>

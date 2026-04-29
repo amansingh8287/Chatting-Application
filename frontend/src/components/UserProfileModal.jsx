@@ -16,7 +16,9 @@ const UserProfileModal = () => {
 
         {/* ❌ CLOSE BUTTON */}
         <button
-          onClick={() => dispatch(setShowProfile(false))}
+          onClick={() =>{ dispatch(setShowProfile(false));
+                         dispatch(setProfileUser(null));
+            }}
           className="absolute top-2 right-3 text-xl font-bold"
         >
           ✖
@@ -33,7 +35,7 @@ const UserProfileModal = () => {
         <h2 className="text-lg font-semibold">{profileUser?.fullName}</h2>
 
         {/* 🆔 USERNAME */}
-        <p className="text-gray-500">@{profileUser?.username}</p>
+        <p className="text-gray-500">@{User?.username}</p>
 
       </div>
 
