@@ -113,7 +113,11 @@ const Sidebar = () => {
     }
 
     return (
-        <div className='w-full h-full border-r border-slate-500 p-4 flex flex-col bg-white/20 backdrop-blur-lg'>
+       <div className="w-full md:w-[300px] h-full md:h-screen 
+          border-r border-slate-400 
+          p-3 md:p-4 
+          flex flex-col 
+          bg-white/20 backdrop-blur-lg">
 
             {/* 🔍 SEARCH */}
             <form onSubmit={searchSubmitHandler} className='flex items-center gap-2 mb-4'>

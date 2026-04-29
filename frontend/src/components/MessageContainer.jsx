@@ -81,7 +81,7 @@ const MessageContainer = () => {
             {
                 selectedUser !== null ? (
                     <div
-                        className='md:min-w-[550px] flex flex-col relative backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl rounded-xl overflow-hidden'
+                        className="h-full w-full flex flex-col relative rounded-xl overflow-hidden  bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl"
                         style={{
                             backgroundImage: `url("/src/assets/chat-bg.jpg")`,
                             backgroundSize: "cover",

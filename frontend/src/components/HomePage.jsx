@@ -13,9 +13,16 @@ const HomePage = () => {
     }
   }, []);
   return (
-    <div className='flex sm:h-[450px] md:h-[550px] rounded-lg overflow-hidden bg-gray-400 bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-0'>
-      <Sidebar />
-      <MessageContainer />
+    <div className="h-screen w-full flex flex-col md:flex-row">
+      {/* Sidebar */}
+      <div className="w-full md:w-[300px] h-[40%] md:h-full">
+        <Sidebar />
+      </div>
+
+      {/* Chat */}
+      <div className="flex-1 h-[60%] md:h-full">
+        <MessageContainer />
+      </div>
     </div>
   )
 }

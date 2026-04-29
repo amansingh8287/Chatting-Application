@@ -60,7 +60,7 @@ const Message = ({ message }) => {
             className={`flex ${isMe ? 'justify-end' : 'justify-start'} my-2`}
         >
             <div
-                className={`max-w-xs px-4 py-2 rounded-lg shadow 
+                className={`max-w-[70%] md:max-w-xs px-3 md:px-4 py-2 rounded-lg shadow 
                 ${isMe
                         ? 'bg-green-500 text-white rounded-br-none'
                         : 'bg-white/80 backdrop-blur-md text-black rounded-bl-none'

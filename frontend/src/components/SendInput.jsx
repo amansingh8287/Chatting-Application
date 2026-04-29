@@ -96,10 +96,10 @@ const SendInput = () => {
                     }}
                     type="text"
                     placeholder='Type a message...'
-                    className='flex-1 bg-transparent outline-none text-black'
+                    className='flex-1 text-sm md:text-base p-2 md:p-3 bg-transparent outline-none text-black'
                 />
 
-                <button className='bg-green-500 p-2 rounded-lg text-white'>
+                <button className='bg-green-500 p-2 md:p-3 rounded-lg text-white'>
                     <IoSend />
                 </button>
             </div>
