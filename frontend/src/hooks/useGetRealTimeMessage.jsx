@@ -16,25 +16,31 @@
 // export default useGetRealTimeMessage;
 
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addMessage } from "../redux/messageSlice";
 import { socket } from "../socket";
 
 const useGetRealTimeMessage = () => {
   const dispatch = useDispatch();
+  const { selectedUser } = useSelector(store => store.user);
 
   useEffect(() => {
-    // 🔥 duplicate listener hatao
     socket.off("newMessage");
 
     socket.on("newMessage", (newMessage) => {
-      dispatch(addMessage(newMessage)); // ✅ realtime add
+
+      // 🔥 IMPORTANT FILTER
+      if (
+        newMessage.senderId === selectedUser?._id ||
+        newMessage.receiverId === selectedUser?._id
+      ) {
+        dispatch(addMessage(newMessage));
+      }
+
     });
 
-    return () => {
-      socket.off("newMessage");
-    };
-  }, [dispatch]);
+    return () => socket.off("newMessage");
+  }, [selectedUser]);
 };
 
 export default useGetRealTimeMessage;

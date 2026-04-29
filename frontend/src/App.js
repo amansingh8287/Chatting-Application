@@ -85,27 +85,25 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!authUser) return;
+  if (!authUser) return;
 
-    // ✅ connect socket
-    socket.connect();
+  socket.connect();
 
-    // ✅ send userId to backend
+  socket.on("connect", () => {
+    console.log("Connected:", socket.id);
+
+    // 🔥 connect ke baad emit
     socket.emit("setup", authUser._id);
+  });
 
-    socket.on("connect", () => {
-      console.log("Connected:", socket.id);
-    });
+  socket.on("getOnlineUsers", (onlineUsers) => {
+    dispatch(setOnlineUsers(onlineUsers));
+  });
 
-    // ✅ get online users
-    socket.on("getOnlineUsers", (users) => {
-      dispatch(setOnlineUsers(users));
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [authUser, dispatch]);
+  return () => {
+    socket.disconnect();
+  };
+ }, [authUser]);
 
   return (
     <div className="p-4 h-screen flex items-center justify-center">
