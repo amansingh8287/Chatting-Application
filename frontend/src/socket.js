@@ -7,7 +7,7 @@ export const socket = io(
   "https://chatting-application-twg7.onrender.com",
   {
     query: {
-      userId: authUser._id
+      userId: user?._id
     },
     withCredentials: true
   }
