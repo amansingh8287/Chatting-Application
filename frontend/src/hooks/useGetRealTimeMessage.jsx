@@ -20,6 +20,7 @@ import { useDispatch } from "react-redux";
 import { addMessage, setMessages } from "../redux/messageSlice";
 import { socket } from "../socket";
 import { useSelector } from "react-redux";
+import { setOnlineUsers } from "../redux/userSlice";
 
 const useGetRealTimeMessage = () => {
   const dispatch = useDispatch();
