@@ -12,11 +12,11 @@ export const initSocket = (server) => {
     cors: {
       origin: [
         "https://chatting-application-4yur.vercel.app",
-        "https://chatting-application-4yur-3gv84hfph.vercel.app"
+        "https://chatting-application-4yur-3gv84hfph.vercel.app",
       ],
       methods: ["GET", "POST"],
-      credentials: true
-    }
+      credentials: true,
+    },
   });
 
   io.on("connection", (socket) => {
@@ -40,7 +40,7 @@ export const initSocket = (server) => {
       const receiverSocketId = userSocketMap[receiverId];
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("typing", {
-          senderId: userId
+          senderId: userId,
         });
       }
     });
@@ -49,7 +49,7 @@ export const initSocket = (server) => {
       const receiverSocketId = userSocketMap[receiverId];
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("stopTyping", {
-          senderId: userId
+          senderId: userId,
         });
       }
     });
@@ -58,20 +58,22 @@ export const initSocket = (server) => {
     //  DISCONNECT
     // =========================
     socket.on("disconnect", async () => {
-       console.log("User disconnected:", userId);
+      console.log("User disconnected:", userId);
 
-        if (userId) {
-        //  remove from online users
-        delete userSocketMap[userId];
+      if (!userId) {
+        console.log("UserId missing in socket connection");
+        return;
+      }
+      //  remove from online users
+      delete userSocketMap[userId];
 
-        //  update last seen
-       await User.findByIdAndUpdate(userId, {
-        lastSeen: new Date()
-       });
-    }
+      //  update last seen
+      await User.findByIdAndUpdate(userId, {
+        lastSeen: new Date(),
+      });
 
-    // 🔥 broadcast updated list
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+      // 🔥 broadcast updated list
+      io.emit("getOnlineUsers", Object.keys(userSocketMap));
     });
   });
 };
