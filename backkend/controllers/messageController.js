@@ -63,25 +63,31 @@ export const getMessage = async (req, res) => {
 
 // ✅ MARK AS SEEN
 export const markSeen = async (req, res) => {
-  try {
-    const senderId = req.params.id;
-    const receiverId = req.id;
+    try {
+        const senderId = req.params.id;
+        const receiverId = req.id;
 
-    await Message.updateMany(
-      { senderId, receiverId, seen: false },
-      { $set: { seen: true } },
-    );
+        // 🔥 update DB
+        const updatedMessages = await Message.updateMany(
+            { senderId, receiverId, seen: false },
+            { $set: { seen: true } }
+        );
 
-    const senderSocketId = getReceiverSocketId(senderId);
+        const senderSocketId = getReceiverSocketId(senderId);
 
-    if (senderSocketId) {
-      io.to(senderSocketId).emit("messageSeen", { senderId });
+        // 🔥 IMPORTANT CHANGE (payload bhejo)
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("messageSeen", {
+                senderId,
+                receiverId
+            });
+        }
+
+        res.status(200).json({ success: true });
+
+    } catch (error) {
+        console.log(error);
     }
-
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.log(error);
-  }
 };
 
 export const deleteMessage = async (req, res) => {

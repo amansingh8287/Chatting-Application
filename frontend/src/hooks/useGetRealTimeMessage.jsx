@@ -41,7 +41,7 @@ const useGetRealTimeMessage = () => {
       dispatch(
         setMessages((prev) =>
           prev.map((msg) =>
-            msg.senderId === senderId ? { ...msg, seen: true } : msg,
+            msg.senderId.toString() === senderId ? { ...msg, seen: true } : msg,
           ),
         ),
       );
@@ -51,9 +51,9 @@ const useGetRealTimeMessage = () => {
       dispatch(
         setMessages((prev) =>
           prev.map((msg) =>
-            msg._id === deletedMessage._id ? deletedMessage : msg
-          )
-        )
+            msg._id === deletedMessage._id ? deletedMessage : msg,
+          ),
+        ),
       );
     });
 

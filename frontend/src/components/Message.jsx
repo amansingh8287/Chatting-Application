@@ -98,7 +98,7 @@ const Message = ({ message }) => {
                 className={`max-w-[70%] md:max-w-xs px-3 md:px-4 py-2 rounded-lg shadow 
                 ${isMe
                         ? 'bg-green-500 text-white rounded-br-none'
-                        : 'bg-white/80 backdrop-blur-md text-black rounded-bl-none'
+                        : 'bg-black/80 backdrop-blur-md text-white rounded-bl-none'
                     }`}
             >
                 {/* 📝 MESSAGE TEXT */}
@@ -116,7 +116,7 @@ const Message = ({ message }) => {
                     {/* ✔✔ SEEN */}
                     {isMe && (
                         message?.seen ? (
-                            <span className="text-blue-400 text-xs">✔✔</span>
+                            <span className="text-blue-700 text-sm font-bold">✔✔</span>
                         ) : (
                             <span className="text-gray-400 text-xs">✔</span>
                         )
