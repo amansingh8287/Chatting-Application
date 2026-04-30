@@ -23,10 +23,9 @@ import { useSelector } from "react-redux";
 
 const useGetRealTimeMessage = () => {
   const dispatch = useDispatch();
-  const { selectedUser, authUser } = useSelector(store => store.user);
+  const { selectedUser, authUser } = useSelector((store) => store.user);
 
   useEffect(() => {
-
     // 🔥 NEW MESSAGE
     socket.on("newMessage", (newMessage) => {
       if (
@@ -38,21 +37,31 @@ const useGetRealTimeMessage = () => {
     });
 
     // 🔥 SEEN UPDATE
-    socket.on("messageSeen", () => {
-      dispatch(setMessages(prev =>
-        prev.map(msg =>
-          msg.senderId === authUser._id
-            ? { ...msg, seen: true }
-            : msg
+    socket.on("messageSeen", ({ senderId }) => {
+      dispatch(
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.senderId === senderId ? { ...msg, seen: true } : msg,
+          ),
+        ),
+      );
+    });
+
+    socket.on("messageDeleted", (deletedMessage) => {
+      dispatch(
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === deletedMessage._id ? deletedMessage : msg
+          )
         )
-      ));
+      );
     });
 
     return () => {
       socket.off("newMessage");
       socket.off("messageSeen");
+      socket.off("messageDeleted");
     };
-
   }, [selectedUser, authUser, dispatch]);
 };
 
