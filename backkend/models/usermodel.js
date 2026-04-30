@@ -23,6 +23,10 @@ const userModel = new mongoose.Schema({
         enum:["male", "female"],
         required:true
     },
+    lastSeen: {
+        type: Date,
+        default: Date.now
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date
     

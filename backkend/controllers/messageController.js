@@ -1,51 +1,52 @@
 import { Conversation } from "../models/conversationmodel.js";
 import { Message } from "../models/messagemodel.js";
-import { getReceiverSocketId, io } from "../socket/socket.js";
+import { io, getReceiverSocketId } from "../socket/socket.js";
 
-// ✅ SEND MESSAGE
+//  SEND MESSAGE
 export const sendMessage = async (req, res) => {
   try {
     const senderId = req.id;
     const receiverId = req.params.id;
     const { message } = req.body;
 
-    let gotConversation = await Conversation.findOne({
-      participants: { $all: [senderId, receiverId] },
-    });
-
-    if (!gotConversation) {
-      gotConversation = await Conversation.create({
-        participants: [senderId, receiverId],
-      });
-    }
-
+    //  STEP 1: message create
     const newMessage = await Message.create({
       senderId,
       receiverId,
       message,
       seen: false,
+      delivered: false
     });
 
-    if (newMessage) {
-      gotConversation.messages.push(newMessage._id);
-    }
-
-    await Promise.all([gotConversation.save(), newMessage.save()]);
-
-    // 🔥 REALTIME
+    //  STEP 2: YAHAN YE CODE LAGANA HAI 
     const receiverSocketId = getReceiverSocketId(receiverId);
 
     if (receiverSocketId) {
+      await Message.findByIdAndUpdate(newMessage._id, {
+        delivered: true
+      });
+
+      newMessage.delivered = true;
+
       io.to(receiverSocketId).emit("newMessage", newMessage);
+
+      const senderSocketId = getReceiverSocketId(senderId);
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("messageDelivered", {
+          messageId: newMessage._id
+        });
+      }
     }
 
-    return res.status(201).json({ newMessage });
+    //  STEP 3: response
+    res.status(201).json(newMessage);
+
   } catch (error) {
     console.log(error);
   }
 };
 
-// ✅ GET MESSAGES (🔥 THIS WAS MISSING)
+//  GET MESSAGES ( THIS WAS MISSING)
 export const getMessage = async (req, res) => {
   try {
     const receiverId = req.params.id;
@@ -67,7 +68,7 @@ export const markSeen = async (req, res) => {
         const senderId = req.params.id;
         const receiverId = req.id;
 
-        // 🔥 update DB
+        //  update DB
         const updatedMessages = await Message.updateMany(
             { senderId, receiverId, seen: false },
             { $set: { seen: true } }
@@ -75,7 +76,7 @@ export const markSeen = async (req, res) => {
 
         const senderSocketId = getReceiverSocketId(senderId);
 
-        // 🔥 IMPORTANT CHANGE (payload bhejo)
+        // IMPORTANT CHANGE (payload bhejo)
         if (senderSocketId) {
             io.to(senderSocketId).emit("messageSeen", {
                 senderId,
@@ -100,7 +101,7 @@ export const deleteMessage = async (req, res) => {
       return res.status(404).json({ message: "Message not found" });
     }
 
-    // ✅ WhatsApp style delete
+    //  WhatsApp style delete
     message.message = "This message was deleted";
     message.deleted = true;
 

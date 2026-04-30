@@ -34,7 +34,6 @@ const useGetMessages = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // ❌ agar user select nahi hai to kuch mat karo
     if (!selectedUser?._id) {
       dispatch(clearMessages());
       return;
@@ -42,27 +41,27 @@ const useGetMessages = () => {
 
     const fetchMessages = async () => {
       try {
-        const res = await axios.get(
-          `${BASE_URL}/api/v1/message/${selectedUser._id}`,
-        );
-
-        dispatch(setMessages(res.data));
-
-        // 🔥 MARK AS SEEN
+        // 🔥 mark seen first
         await axios.put(
           `${BASE_URL}/api/v1/message/seen/${selectedUser._id}`,
           {},
           { withCredentials: true },
         );
+
+        // 🔥 then fetch messages
+        const res = await axios.get(
+          `${BASE_URL}/api/v1/message/${selectedUser._id}`,
+          { withCredentials: true },
+        );
+
+        dispatch(setMessages(res.data));
       } catch (error) {
         console.log(error);
       }
     };
 
-    // 🔥 pehle clear karo phir fetch
-    dispatch(clearMessages());
     fetchMessages();
-  }, [selectedUser?._id, dispatch]);
+  }, [selectedUser?._id]);
 };
 
 export default useGetMessages;

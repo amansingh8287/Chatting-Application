@@ -38,13 +38,27 @@ const useGetRealTimeMessage = () => {
 
     // 🔥 SEEN UPDATE
     socket.on("messageSeen", ({ senderId }) => {
-      dispatch(
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.senderId.toString() === senderId ? { ...msg, seen: true } : msg,
-          ),
-        ),
-      );
+      dispatch((dispatch, getState) => {
+        const { messages } = getState().message;
+
+        const updatedMessages = messages.map((msg) =>
+          msg.senderId.toString() === senderId ? { ...msg, seen: true } : msg,
+        );
+
+        dispatch(setMessages(updatedMessages));
+      });
+    });
+
+    socket.on("messageDelivered", ({ messageId }) => {
+      dispatch((dispatch, getState) => {
+        const { messages } = getState().message;
+
+        const updated = messages.map((msg) =>
+          msg._id === messageId ? { ...msg, delivered: true } : msg,
+        );
+
+        dispatch(setMessages(updated));
+      });
     });
 
     socket.on("messageDeleted", (deletedMessage) => {
@@ -55,6 +69,10 @@ const useGetRealTimeMessage = () => {
           ),
         ),
       );
+    });
+
+    socket.on("getOnlineUsers", (users) => {
+      dispatch(setOnlineUsers(users));
     });
 
     return () => {

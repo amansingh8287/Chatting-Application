@@ -1,61 +1,85 @@
-import {Server} from "socket.io";
-import http from "http";
-import express from "express";
+import { Server } from "socket.io";
+import User from "../models/usermodel.js";
 
-const app = express();
+//  userId -> socketId mapping
+const userSocketMap = {};
 
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: [
-      "https://chatting-application-4yur.vercel.app",
-      "https://chatting-application-4yur-3gv84hfph.vercel.app"
-    ],
-    methods: ['GET', 'POST'],
-    credentials: true
-  }
-});
+let io;
 
+//  init function (index.js se call hoga)
+export const initSocket = (server) => {
+  io = new Server(server, {
+    cors: {
+      origin: [
+        "https://chatting-application-4yur.vercel.app",
+        "https://chatting-application-4yur-3gv84hfph.vercel.app"
+      ],
+      methods: ["GET", "POST"],
+      credentials: true
+    }
+  });
+
+  io.on("connection", (socket) => {
+    //  IMPORTANT: userId handshake se lo
+    const userId = socket.handshake.query.userId;
+
+    console.log("User connected:", userId);
+
+    //  user ko map karo
+    if (userId) {
+      userSocketMap[userId] = socket.id;
+    }
+
+    //  online users broadcast
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+    // =========================
+    //  TYPING EVENT
+    // =========================
+    socket.on("typing", ({ receiverId }) => {
+      const receiverSocketId = userSocketMap[receiverId];
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("typing", {
+          senderId: userId
+        });
+      }
+    });
+
+    socket.on("stopTyping", ({ receiverId }) => {
+      const receiverSocketId = userSocketMap[receiverId];
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("stopTyping", {
+          senderId: userId
+        });
+      }
+    });
+
+    // =========================
+    //  DISCONNECT
+    // =========================
+    socket.on("disconnect", async () => {
+       console.log("User disconnected:", userId);
+
+        if (userId) {
+        //  remove from online users
+        delete userSocketMap[userId];
+
+        //  update last seen
+       await User.findByIdAndUpdate(userId, {
+        lastSeen: new Date()
+       });
+    }
+
+    // 🔥 broadcast updated list
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    });
+  });
+};
+
+//  helper function (controllers me use hoga)
 export const getReceiverSocketId = (receiverId) => {
-    return userSocketMap[receiverId];
-}
+  return userSocketMap[receiverId];
+};
 
-const userSocketMap = {}; // {userId->socketId}
-
-
-io.on('connection', (socket) => {
-
-    console.log("User connected:", socket.id);
-
-    // ✅ ADD THIS HERE
-    socket.on("setup", (userId) => {
-        userSocketMap[userId] = socket.id;
-
-        // update online users
-        io.emit("getOnlineUsers", Object.keys(userSocketMap));
-    });
-
-    socket.on('disconnect', () => {
-        console.log("User disconnected:", socket.id);
-
-        // remove user from map
-        for (const key in userSocketMap) {
-            if (userSocketMap[key] === socket.id) {
-                delete userSocketMap[key];
-            }
-        }
-
-        io.emit("getOnlineUsers", Object.keys(userSocketMap));
-    });
-
-    socket.on("typing", (receiverId) => {
-         const receiverSocketId = getReceiverSocketId(receiverId);
-        if (receiverSocketId) {
-              io.to(receiverSocketId).emit("typing");
-        }
-    });
-});
-
-export {app, io, server};
-
-
+// io export (controllers ke liye)
+export { io };
