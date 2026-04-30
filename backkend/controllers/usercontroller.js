@@ -97,7 +97,7 @@
 //     }
 // }
 
-import { User } from "../models/usermodel.js";
+import User  from "../models/usermodel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
