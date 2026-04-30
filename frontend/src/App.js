@@ -74,11 +74,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { socket } from "./socket";
 import { setOnlineUsers } from './redux/userSlice';
 import UserProfileModal from "./components/UserProfileModal";
+import ForgotPassword from "./components/ForgotPassword";
 
 const router = createBrowserRouter([
   { path: "/", element: <HomePage /> },
   { path: "/signup", element: <Signup /> },
   { path: "/login", element: <Login /> },
+  { path: "/forgot-password", element: <ForgotPassword /> },
 ]);
 
 function App() {

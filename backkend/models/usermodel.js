@@ -22,6 +22,9 @@ const userModel = new mongoose.Schema({
         type:String,
         enum:["male", "female"],
         required:true
-    }
+    },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date
+    
 }, {timestamps:true});
 export const User = mongoose.model("User", userModel);

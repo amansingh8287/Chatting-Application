@@ -88,3 +88,26 @@ export const markSeen = async (req, res) => {
         console.log(error);
     }
 };
+
+export const deleteMessage = async (req, res) => {
+    try {
+        const messageId = req.params.id;
+
+        const message = await Message.findById(messageId);
+
+        if (!message) {
+            return res.status(404).json({ message: "Message not found" });
+        }
+
+        // ✅ WhatsApp style delete
+        message.message = "This message was deleted";
+        message.deleted = true;
+
+        await message.save();
+
+        res.status(200).json({ success: true });
+
+    } catch (error) {
+        console.log(error);
+    }
+};

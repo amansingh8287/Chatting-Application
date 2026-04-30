@@ -100,6 +100,7 @@
 import { User } from "../models/usermodel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 // ✅ REGISTER
 export const register = async (req, res) => {
@@ -230,4 +231,46 @@ export const getOtherUsers = async (req, res) => {
         console.log(error);
         res.status(500).json({ message: "Server error" });
     }
+};
+
+export const forgotPassword = async (req, res) => {
+    const { username } = req.body;
+
+    const user = await User.findOne({ username });
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    const token = crypto.randomBytes(20).toString("hex");
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    console.log(`Reset link: http://localhost:3000/reset/${token}`);
+
+    res.json({ message: "Reset link generated (check console)" });
+};
+
+export const resetPassword = async (req, res) => {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await User.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.json({ message: "Password reset successful" });
 };

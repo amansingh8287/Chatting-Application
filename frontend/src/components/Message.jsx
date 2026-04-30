@@ -34,11 +34,16 @@
 
 // export default Message
 
-import React, { useEffect, useRef } from 'react'
-import { useSelector } from "react-redux";
+import React, { useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from "react-redux";
+import axios from "axios";
+import { BASE_URL } from "..";
+import { setMessages } from "../redux/messageSlice";
 
 const Message = ({ message }) => {
     const scroll = useRef();
+    const dispatch = useDispatch();
+
     const { authUser } = useSelector(store => store.user);
 
     useEffect(() => {
@@ -47,11 +52,37 @@ const Message = ({ message }) => {
 
     const isMe = message?.senderId === authUser?._id;
 
+    // ⏱ format time
     const formatTime = (date) => {
         return new Date(date).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit"
         });
+    };
+
+    // 🗑 DELETE MESSAGE
+    const deleteMessageHandler = async () => {
+        const confirmDelete = window.confirm("Delete this message?");
+        if (!confirmDelete) return;
+
+        try {
+            await axios.delete(
+                `${BASE_URL}/api/v1/message/${message._id}`,
+                { withCredentials: true }
+            );
+
+            // 🔥 update UI
+            dispatch(setMessages(prev =>
+                prev.map(msg =>
+                    msg._id === message._id
+                        ? { ...msg, message: "This message was deleted", deleted: true }
+                        : msg
+                )
+            ));
+
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     return (
@@ -60,19 +91,24 @@ const Message = ({ message }) => {
             className={`flex ${isMe ? 'justify-end' : 'justify-start'} my-2`}
         >
             <div
+                onContextMenu={(e) => {
+                    e.preventDefault();
+                    deleteMessageHandler();
+                }}
                 className={`max-w-[70%] md:max-w-xs px-3 md:px-4 py-2 rounded-lg shadow 
                 ${isMe
                         ? 'bg-green-500 text-white rounded-br-none'
                         : 'bg-white/80 backdrop-blur-md text-black rounded-bl-none'
                     }`}
             >
-                {/* MESSAGE */}
-                <p>{message?.message}</p>
+                {/* 📝 MESSAGE TEXT */}
+                <p className={message.deleted ? "italic text-gray-300" : ""}>
+                    {message?.message}
+                </p>
 
-                {/* TIME + TICK */}
+                {/* ⏱ TIME + ✔✔ */}
                 <div className="flex justify-end items-center gap-1 mt-1">
 
-                    {/* TIME */}
                     <span className={`text-xs ${isMe ? 'text-gray-200' : 'text-gray-600'}`}>
                         {formatTime(message?.createdAt)}
                     </span>
@@ -80,16 +116,15 @@ const Message = ({ message }) => {
                     {/* ✔✔ SEEN */}
                     {isMe && (
                         message?.seen ? (
-                            <span className="text-blue-500 text-xs">✔✔</span>
+                            <span className="text-blue-400 text-xs">✔✔</span>
                         ) : (
                             <span className="text-gray-400 text-xs">✔</span>
                         )
                     )}
-
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default Message;

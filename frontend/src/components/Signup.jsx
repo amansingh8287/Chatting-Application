@@ -4,7 +4,11 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { BASE_URL } from '..';
 
+// 👁 icons
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+
 const Signup = () => {
+
   const [user, setUser] = useState({
     fullName: "",
     username: "",
@@ -13,21 +17,28 @@ const Signup = () => {
     gender: "",
   });
 
+  // 🔥 show/hide states
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const navigate = useNavigate();
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
-    // ✅ Password validation
     if (user.password !== user.confirmPassword) {
       return toast.error("Passwords do not match");
     }
 
     try {
-      const res = await axios.post(`${BASE_URL}/api/v1/user/register`, user, {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true
-      });
+      const res = await axios.post(
+        `${BASE_URL}/api/v1/user/register`,
+        user,
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true
+        }
+      );
 
       if (res.data.success) {
         toast.success(res.data.message);
@@ -49,13 +60,14 @@ const Signup = () => {
 
   return (
     <div className="flex items-center justify-center h-screen">
+
       <div className="w-96 p-8 rounded-xl shadow-lg bg-black bg-opacity-50 backdrop-blur-md text-white">
 
         <h1 className="text-3xl font-bold text-center mb-6">Signup</h1>
 
         <form onSubmit={onSubmitHandler}>
 
-          {/* Full Name */}
+          {/* FULL NAME */}
           <input
             value={user.fullName}
             onChange={(e) => setUser({ ...user, fullName: e.target.value })}
@@ -64,7 +76,7 @@ const Signup = () => {
             placeholder="Full Name"
           />
 
-          {/* Username */}
+          {/* USERNAME */}
           <input
             value={user.username}
             onChange={(e) => setUser({ ...user, username: e.target.value })}
@@ -73,25 +85,43 @@ const Signup = () => {
             placeholder="Username"
           />
 
-          {/* Password */}
-          <input
-            value={user.password}
-            onChange={(e) => setUser({ ...user, password: e.target.value })}
-            className="w-full mb-3 p-2 rounded bg-gray-800 outline-none"
-            type="password"
-            placeholder="Password"
-          />
+          {/* PASSWORD 👁 */}
+          <div className="relative">
+            <input
+              value={user.password}
+              onChange={(e) => setUser({ ...user, password: e.target.value })}
+              className="w-full mb-3 p-2 rounded bg-gray-800 outline-none pr-10"
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+            />
 
-          {/* Confirm Password */}
-          <input
-            value={user.confirmPassword}
-            onChange={(e) => setUser({ ...user, confirmPassword: e.target.value })}
-            className="w-full mb-3 p-2 rounded bg-gray-800 outline-none"
-            type="password"
-            placeholder="Confirm Password"
-          />
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-2 cursor-pointer text-xl"
+            >
+              {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+            </span>
+          </div>
 
-          {/* ✅ Gender (FIXED) */}
+          {/* CONFIRM PASSWORD 👁 */}
+          <div className="relative">
+            <input
+              value={user.confirmPassword}
+              onChange={(e) => setUser({ ...user, confirmPassword: e.target.value })}
+              className="w-full mb-3 p-2 rounded bg-gray-800 outline-none pr-10"
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm Password"
+            />
+
+            <span
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-xl"
+            >
+              {showConfirmPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+            </span>
+          </div>
+
+          {/* GENDER */}
           <div className="flex gap-6 my-4">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -116,6 +146,7 @@ const Signup = () => {
             </label>
           </div>
 
+          {/* LOGIN LINK */}
           <p className="text-center mb-3">
             Already have an account?{" "}
             <Link to="/login" className="text-blue-400 hover:underline">
@@ -123,6 +154,7 @@ const Signup = () => {
             </Link>
           </p>
 
+          {/* BUTTON */}
           <button
             type="submit"
             className="w-full bg-blue-500 hover:bg-blue-600 p-2 rounded"
