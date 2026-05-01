@@ -10,36 +10,44 @@ import { initSocket } from "./socket/socket.js";
 
 dotenv.config();
 
-
 const app = express();
 const server = http.createServer(app);
 
 const PORT = process.env.PORT || 5000;
 
+// 🔥 socket init
 initSocket(server);
 
-//  MIDDLEWARE
+// 🔥 middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-//  FINAL CORS FIX
+// 🔥 CORS FIX
 app.use(cors({
-  origin: [
-    "https://chatting-application-eight.vercel.app",
-    "https://chatting-application-dhkxxc4fm-workamansingh12-3760s-projects.vercel.app"
-  ],
+  origin: true,
   credentials: true
 }));
 
 app.set("trust proxy", 1);
 
-// ROUTES
+// 🔥 routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/message", messageRoute);
 
-//  SERVER START
-server.listen(PORT, () => {
-  connectDB();
-  console.log(`Server running on port ${PORT}`);
-});
+// 🔥 start server properly
+const startServer = async () => {
+  try {
+    await connectDB();
+    console.log("✅ DB connected");
+
+    server.listen(PORT, () => {
+      console.log("🚀 Server running on port", PORT);
+    });
+
+  } catch (error) {
+    console.log("❌ Error starting server:", error);
+  }
+};
+
+startServer();
