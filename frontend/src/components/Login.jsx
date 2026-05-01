@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { setAuthUser } from '../redux/userSlice';
 import { BASE_URL } from '..';
 
-// 👁 icons
+// icons
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 const Login = () => {
@@ -16,7 +16,6 @@ const Login = () => {
     password: "",
   });
 
-  // 🔥 show password state
   const [showPassword, setShowPassword] = useState(false);
 
   const dispatch = useDispatch();
@@ -24,6 +23,7 @@ const Login = () => {
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+
     try {
       const res = await axios.post(
         `${BASE_URL}/api/v1/user/login`,
@@ -34,17 +34,37 @@ const Login = () => {
         }
       );
 
-      dispatch(setAuthUser(res.data));
+      console.log("LOGIN RESPONSE:", res.data);
+
+      // correct user extract
+      const loggedInUser = res.data.user || res.data;
+
+      // safety check
+      if (!loggedInUser?._id) {
+        toast.error("Login failed: invalid user data");
+        return;
+      }
+
+      //  redux save
+      dispatch(setAuthUser(loggedInUser));
+
+      // localStorage save (VERY IMPORTANT)
+      localStorage.setItem("user", JSON.stringify(loggedInUser));
+
+      toast.success("Login successful ✅");
+
+      // redirect
       navigate("/");
 
     } catch (error) {
-      toast.error(error.response?.data?.message);
+      console.log(error);
+      toast.error(error.response?.data?.message || "Login failed ❌");
     }
 
     setUser({
       username: "",
       password: ""
-    })
+    });
   }
 
   return (
@@ -69,7 +89,7 @@ const Login = () => {
             />
           </div>
 
-          {/* PASSWORD + 👁 */}
+          {/* PASSWORD */}
           <div>
             <label className='label p-2'>
               <span className='text-base label-text'>Password</span>
@@ -93,7 +113,7 @@ const Login = () => {
             </div>
           </div>
 
-          {/* 🔥 FORGOT PASSWORD */}
+          {/* FORGOT PASSWORD */}
           <p className='text-right text-sm mt-1'>
             <span
               onClick={() => navigate("/forgot-password")}
@@ -103,14 +123,17 @@ const Login = () => {
             </span>
           </p>
 
-          {/* SIGNUP LINK */}
+          {/* SIGNUP */}
           <p className='text-center my-2'>
-            Don't have an account? <Link to="/signup"> signup </Link>
+            Don't have an account? <Link to="/signup">signup</Link>
           </p>
 
           {/* BUTTON */}
           <div>
-            <button type="submit" className='btn btn-block btn-sm mt-2 border border-slate-700'>
+            <button
+              type="submit"
+              className='btn btn-block btn-sm mt-2 border border-slate-700'
+            >
               Login
             </button>
           </div>

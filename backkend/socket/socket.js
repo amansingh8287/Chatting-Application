@@ -60,10 +60,7 @@ export const initSocket = (server) => {
     socket.on("disconnect", async () => {
       console.log("User disconnected:", userId);
 
-      if (!userId) {
-        console.log("UserId missing in socket connection");
-        return;
-      }
+     if (!userId || userId === "undefined") return;
       //  remove from online users
       delete userSocketMap[userId];
 
