@@ -6,7 +6,6 @@ import { setProfileUser, setShowProfile } from "../redux/userSlice";
 const OtherUser = ({ user, isOnline }) => {
   const dispatch = useDispatch();
   const { selectedUser, onlineUsers } = useSelector((store) => store.user);
-  const isOnline = onlineUsers?.includes(user._id);
   const selectedUserHandler = (user) => {
     dispatch(setSelectedUser(user));
     dispatch(setShowProfile(true));
