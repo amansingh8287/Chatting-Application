@@ -27,9 +27,9 @@ const useGetRealTimeMessage = () => {
           prev.map((msg) =>
             msg.senderId?.toString() === senderId
               ? { ...msg, seen: true }
-              : msg
-          )
-        )
+              : msg,
+          ),
+        ),
       );
     };
 
@@ -40,11 +40,9 @@ const useGetRealTimeMessage = () => {
       dispatch(
         setMessages((prev) =>
           prev.map((msg) =>
-            msg._id === messageId
-              ? { ...msg, delivered: true }
-              : msg
-          )
-        )
+            msg._id === messageId ? { ...msg, delivered: true } : msg,
+          ),
+        ),
       );
     };
 
@@ -55,15 +53,23 @@ const useGetRealTimeMessage = () => {
       dispatch(
         setMessages((prev) =>
           prev.map((msg) =>
-            msg._id === deletedMessage._id
-              ? deletedMessage
-              : msg
-          )
-        )
+            msg._id === deletedMessage._id ? deletedMessage : msg,
+          ),
+        ),
       );
     };
 
     socket.on("messageDeleted", handleDelete);
+
+    const [typingUser, setTypingUser] = useState(null);
+
+    socket.on("typing", ({ senderId }) => {
+      setTypingUser(senderId);
+    });
+
+    socket.on("stopTyping", () => {
+      setTypingUser(null);
+    });
 
     // ✅ ONLINE USERS (alag slice hai)
     const handleOnlineUsers = (users) => {
@@ -79,8 +85,10 @@ const useGetRealTimeMessage = () => {
       socket.off("messageDelivered", handleDelivered);
       socket.off("messageDeleted", handleDelete);
       socket.off("getOnlineUsers", handleOnlineUsers);
+      socket.off("typing");
+      socket.off("stopTyping");
     };
-  }, [dispatch]);
+  }, []);
 };
 
 export default useGetRealTimeMessage;

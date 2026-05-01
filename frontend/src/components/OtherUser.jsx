@@ -1,6 +1,10 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setSelectedUser, setProfileUser, setShowProfile } from "../redux/userSlice";
+import {
+  setSelectedUser,
+  setProfileUser,
+  setShowProfile,
+} from "../redux/userSlice";
 
 const OtherUser = ({ user, isOnline }) => {
   const dispatch = useDispatch();
@@ -43,7 +47,9 @@ const OtherUser = ({ user, isOnline }) => {
           {isOnline ? (
             <span className="text-green-500">● Online</span>
           ) : (
-            <span className="text-gray-400">Offline</span>
+            <span className="text-gray-400">
+              Last seen: {new Date(user.lastSeen).toLocaleTimeString()}
+            </span>
           )}
         </div>
       </div>

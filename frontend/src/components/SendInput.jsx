@@ -1,54 +1,4 @@
-// import React, {useState } from 'react'
-// import { IoSend } from "react-icons/io5";
-// import axios from "axios";
-// import {useDispatch,useSelector} from "react-redux";
-// import { setMessages } from '../redux/messageSlice';
-// import { addMessage } from "../redux/messageSlice";
-// import { BASE_URL } from '..';
-
-// const SendInput = () => {
-//     const [message, setMessage] = useState("");
-//     const dispatch = useDispatch();
-//     const {selectedUser} = useSelector(store=>store.user);
-//     const {messages} = useSelector(store=>store.message);
-
-//     const onSubmitHandler = async (e) => {
-//         e.preventDefault();
-//         try {
-//             const res = await axios.post(`${BASE_URL}/api/v1/message/send/${selectedUser?._id}`, {message}, {
-//                 headers:{
-//                     'Content-Type':'application/json'
-//                 },
-//                 withCredentials:true
-//             });
-//             // dispatch(setMessages([...messages, res?.data?.newMessage]))
-//             dispatch(addMessage(res?.data?.newMessage));
-//         } catch (error) {
-//             console.log(error);
-//         } 
-//         setMessage("");
-//     }
-//     return (
-//         <form onSubmit={onSubmitHandler} className='px-4 my-3'>
-//             <div className='w-full relative'>
-//                 <input
-//                     value={message}
-//                     onChange={(e) => setMessage(e.target.value)}
-//                     type="text"
-//                     placeholder='Send a message...'
-//                     className='border text-sm rounded-lg block w-full p-3 border-zinc-500 bg-gray-600 text-white'
-//                 />
-//                 <button type="submit" className='absolute flex inset-y-0 end-0 items-center pr-4'>
-//                     <IoSend />
-//                 </button>
-//             </div>
-//         </form>
-//     )
-// }
-
-// export default SendInput
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { IoSend } from "react-icons/io5";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
@@ -61,6 +11,32 @@ const SendInput = () => {
   const dispatch = useDispatch();
   const { selectedUser } = useSelector(store => store.user);
 
+  const typingTimeout = useRef(null); // 🔥 important
+
+  const handleTyping = (value) => {
+    setMessage(value);
+
+    const socket = getSocket();
+    if (!socket || !selectedUser?._id) return;
+
+    // 🔥 typing emit
+    socket.emit("typing", {
+      receiverId: selectedUser._id
+    });
+
+    // 🔥 clear previous timeout
+    if (typingTimeout.current) {
+      clearTimeout(typingTimeout.current);
+    }
+
+    // 🔥 stopTyping after delay
+    typingTimeout.current = setTimeout(() => {
+      socket.emit("stopTyping", {
+        receiverId: selectedUser._id
+      });
+    }, 1000);
+  };
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
@@ -72,8 +48,13 @@ const SendInput = () => {
         { withCredentials: true }
       );
 
-      //  correct data
       dispatch(addMessage(res.data.newMessage));
+
+      // 🔥 stop typing on send
+      const socket = getSocket();
+      socket?.emit("stopTyping", {
+        receiverId: selectedUser?._id
+      });
 
     } catch (error) {
       console.log(error);
@@ -90,15 +71,7 @@ const SendInput = () => {
 
         <input
           value={message}
-          onChange={(e) => {
-            setMessage(e.target.value);
-
-            //  SOCKET FIX
-            const socket = getSocket();
-            socket?.emit("typing", {
-              receiverId: selectedUser?._id
-            });
-          }}
+          onChange={(e) => handleTyping(e.target.value)}
           type="text"
           placeholder='Type a message...'
           className='flex-1 text-sm md:text-base p-2 md:p-3 bg-transparent outline-none text-black'
