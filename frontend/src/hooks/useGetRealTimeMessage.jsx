@@ -6,64 +6,73 @@ import { getSocket } from "../socket";
 
 const useGetRealTimeMessage = () => {
   const dispatch = useDispatch();
-  const { selectedUser } = useSelector((store) => store.user);
   const { messages } = useSelector((store) => store.message);
 
   useEffect(() => {
     const socket = getSocket();
     if (!socket) return;
 
-    //  NEW MESSAGE
+    // ✅ NEW MESSAGE
     const handleNewMessage = (newMessage) => {
-      console.log(" RECEIVED:", newMessage);
-
-      dispatch(addMessage(newMessage));
+      console.log("🔥 RECEIVED:", newMessage);
+      dispatch(addMessage(newMessage)); // ✔ correct
     };
 
-    socket.on("newMessage", (newMessage) => {
-      console.log(" RECEIVED:", newMessage);
+    socket.on("newMessage", handleNewMessage);
 
-      dispatch(addMessage(newMessage)); //  REMOVE FILTER
-    });
-
-    //  SEEN
+    // ✅ SEEN
     const handleSeen = ({ senderId }) => {
-      const updated = messages.map((msg) =>
-        msg.senderId?.toString() === senderId ? { ...msg, seen: true } : msg,
+      dispatch(
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.senderId?.toString() === senderId
+              ? { ...msg, seen: true }
+              : msg
+          )
+        )
       );
-      dispatch(setMessages(updated));
     };
 
     socket.on("messageSeen", handleSeen);
 
-    // DELIVERED
+    // ✅ DELIVERED
     const handleDelivered = ({ messageId }) => {
-      const updated = messages.map((msg) =>
-        msg._id === messageId ? { ...msg, delivered: true } : msg,
+      dispatch(
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === messageId
+              ? { ...msg, delivered: true }
+              : msg
+          )
+        )
       );
-      dispatch(setMessages(updated));
     };
 
     socket.on("messageDelivered", handleDelivered);
 
-    //  DELETE
+    // ✅ DELETE
     const handleDelete = (deletedMessage) => {
-      const updated = messages.map((msg) =>
-        msg._id === deletedMessage._id ? deletedMessage : msg,
+      dispatch(
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === deletedMessage._id
+              ? deletedMessage
+              : msg
+          )
+        )
       );
-      dispatch(setMessages(updated));
     };
 
     socket.on("messageDeleted", handleDelete);
 
-    //  ONLINE USERS
+    // ✅ ONLINE USERS (alag slice hai)
     const handleOnlineUsers = (users) => {
-      dispatch(setOnlineUsers(users));
+      dispatch(setOnlineUsers(users)); // ❗ FIX
     };
 
     socket.on("getOnlineUsers", handleOnlineUsers);
 
-    //  CLEANUP
+    // ✅ CLEANUP
     return () => {
       socket.off("newMessage", handleNewMessage);
       socket.off("messageSeen", handleSeen);
@@ -71,7 +80,7 @@ const useGetRealTimeMessage = () => {
       socket.off("messageDeleted", handleDelete);
       socket.off("getOnlineUsers", handleOnlineUsers);
     };
-  }, []);
+  }, [dispatch]);
 };
 
 export default useGetRealTimeMessage;

@@ -73,7 +73,7 @@ const SendInput = () => {
       );
 
       //  correct data
-      dispatch(addMessage(res.data));
+      dispatch(addMessage(res.data.newMessage));
 
     } catch (error) {
       console.log(error);
