@@ -23,9 +23,16 @@ const useGetRealTimeMessage = () => {
     });
 
     // ✅ NEW MESSAGE
-    const handleNewMessage = (newMessage) => {
+    const handleNewMessage = async (newMessage) => {
+      dispatch(addMessage(newMessage));
+
+      // 🔥 mark seen instantly when message arrives
       if (newMessage.senderId === selectedUser?._id) {
-        dispatch(addMessage(newMessage));
+        await axios.put(
+          `${BASE_URL}/api/v1/message/seen/${selectedUser._id}`,
+          {},
+          { withCredentials: true },
+        );
       }
     };
 
