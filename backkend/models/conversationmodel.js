@@ -7,7 +7,8 @@ const conversationModel = new mongoose.Schema({
     }],
     messages:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"Message"
+        ref:"Message",
+        default: []
     }]
 },{timestamps:true});
 export const Conversation = mongoose.model("Conversation", conversationModel);

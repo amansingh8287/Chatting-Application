@@ -9,6 +9,18 @@ export const sendMessage = async (req, res) => {
     const receiverId = req.params.id;
     const { message } = req.body;
 
+    //  1. find conversation
+    let conversation = await Conversation.findOne({
+      participants: { $all: [senderId, receiverId] }
+    });
+
+    //  2. agar nahi mila → create karo
+    if (!conversation) {
+      conversation = await Conversation.create({
+        participants: [senderId, receiverId]
+      });
+    }
+
     //  STEP 1: message create
     const newMessage = await Message.create({
       senderId,
@@ -17,6 +29,13 @@ export const sendMessage = async (req, res) => {
       seen: false,
       delivered: false
     });
+
+    if (newMessage) {
+      conversation.messages.push(newMessage._id);
+    }
+
+    // 5. save karo
+    await conversation.save();
 
     //  STEP 2: YAHAN YE CODE LAGANA HAI 
     const receiverSocketId = getReceiverSocketId(receiverId);
@@ -37,7 +56,7 @@ export const sendMessage = async (req, res) => {
         });
       }
     }
-
+    
     //  STEP 3: response
     res.status(201).json(newMessage);
 
