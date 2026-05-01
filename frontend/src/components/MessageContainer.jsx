@@ -56,13 +56,19 @@ import { useSelector, useDispatch } from "react-redux";
 import { setSelectedUser } from "../redux/userSlice";
 import { getSocket } from "../socket";
 import chatBg from "../assets/chat-bg.jpg";
+import { useState } from "react";
+import { useState } from "react";
+import useGetRealTimeMessage from "../hooks/useGetRealTimeMessage";
+
+const [typingUser, setTypingUser] = useState(null);
+
 
 const MessageContainer = () => {
   const { selectedUser, authUser, onlineUsers } = useSelector(
     (store) => store.user,
   );
 
-  const [typing, setTyping] = useState(false);
+  const { typingUser } = useGetRealTimeMessage();
 
   const isOnline = onlineUsers?.includes(selectedUser?._id);
 
