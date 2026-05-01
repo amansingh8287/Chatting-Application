@@ -222,7 +222,7 @@ export const getOtherUsers = async (req, res) => {
         const loggedInUserId = req.id;
 
         const users = await User.find({
-            _id: { $ne: loggedInUserId }
+            _id: { $ne: req.id }
         }).select("-password");
 
         return res.status(200).json(users);
