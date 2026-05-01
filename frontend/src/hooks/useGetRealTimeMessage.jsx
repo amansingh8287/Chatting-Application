@@ -91,6 +91,7 @@ const useGetRealTimeMessage = () => {
       socket.off("stopTyping");
     };
   }, []);
+   return { typingUser };
 };
 
 export default useGetRealTimeMessage;
