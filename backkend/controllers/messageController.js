@@ -95,15 +95,22 @@ export const markSeen = async (req, res) => {
 
     await Message.updateMany(
       { senderId, receiverId, seen: false },
-      { $set: { seen: true } }
+      { $set: { seen: true } },
     );
 
     const senderSocketId = getReceiverSocketId(senderId.toString());
 
     if (senderSocketId) {
-      io.to(senderSocketId).emit("messageSeen", {
+      const updatedMessages = await Message.find({
         senderId,
         receiverId,
+        seen: true,
+      });
+
+      const seenMessageIds = updatedMessages.map((msg) => msg._id);
+
+      io.to(senderSocketId).emit("messageSeen", {
+        messageIds: seenMessageIds,
       });
     }
 
@@ -131,9 +138,7 @@ export const deleteMessage = async (req, res) => {
 
     await message.save();
 
-    const receiverSocketId = getReceiverSocketId(
-      message.receiverId.toString()
-    );
+    const receiverSocketId = getReceiverSocketId(message.receiverId.toString());
 
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("messageDeleted", message);

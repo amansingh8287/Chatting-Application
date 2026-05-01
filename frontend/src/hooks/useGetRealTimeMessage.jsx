@@ -32,11 +32,11 @@ const useGetRealTimeMessage = () => {
     socket.on("newMessage", handleNewMessage);
 
     // ✅ SEEN
-    const handleSeen = ({ senderId }) => {
+    const handleSeen = ({ messageIds }) => {
       dispatch(
         setMessages((prev) =>
           prev.map((msg) =>
-            msg.senderId?.toString() === senderId
+            messageIds.includes(msg._id?.toString())
               ? { ...msg, seen: true }
               : msg,
           ),
@@ -51,7 +51,9 @@ const useGetRealTimeMessage = () => {
       dispatch(
         setMessages((prev) =>
           prev.map((msg) =>
-            msg._id?.toString() === messageId?.toString() ? { ...msg, delivered: true } : msg,
+            msg._id?.toString() === messageId?.toString()
+              ? { ...msg, delivered: true }
+              : msg,
           ),
         ),
       );
