@@ -51,7 +51,7 @@ const useGetRealTimeMessage = () => {
       dispatch(
         setMessages((prev) =>
           prev.map((msg) =>
-            msg._id === messageId ? { ...msg, delivered: true } : msg,
+            msg._id?.toString() === messageId?.toString() ? { ...msg, delivered: true } : msg,
           ),
         ),
       );
