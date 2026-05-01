@@ -10,10 +10,6 @@ export const connectSocket = (userId) => {
     query: { userId },
     withCredentials: true
   });
-
-  socket.on("connect", () => {
-    console.log("✅ Connected:", socket.id);
-  });
 };
 
 export const getSocket = () => socket;

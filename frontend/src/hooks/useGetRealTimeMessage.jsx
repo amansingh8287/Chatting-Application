@@ -23,7 +23,6 @@ import { useSelector } from "react-redux";
 import { setOnlineUsers } from "../redux/userSlice";
 import { getSocket } from "../socket";
 
-
 const useGetRealTimeMessage = () => {
   const dispatch = useDispatch();
   const { selectedUser, authUser } = useSelector((store) => store.user);
