@@ -51,11 +51,10 @@
 import React, { useState } from 'react'
 import { IoSend } from "react-icons/io5";
 import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
-// import { setMessages } from '../redux/messageSlice';
+import { useDispatch, useSelector } from "react-redux"; import { setMessages } from '../redux/messageSlice';
 import { addMessage } from "../redux/messageSlice";
 import { BASE_URL } from '..';
-import { socket } from "../socket";
+import { getSocket } from "../socket";
 
 const SendInput = () => {
     const [message, setMessage] = useState("");
