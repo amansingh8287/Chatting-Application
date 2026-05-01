@@ -54,7 +54,7 @@ import SendInput from './SendInput'
 import Messages from './Messages';
 import { useSelector,useDispatch } from "react-redux";
 import { setSelectedUser } from '../redux/userSlice';
-import { socket } from "../socket";
+import { getSocket } from "../socket";
 import chatBg from "../assets/chat-bg.jpg";
 
 const MessageContainer = () => {
