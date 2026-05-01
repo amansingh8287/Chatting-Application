@@ -11,80 +11,59 @@ const useGetRealTimeMessage = () => {
 
   useEffect(() => {
     const socket = getSocket();
-
     if (!socket) return;
 
-    // =========================
-    // NEW MESSAGE
-    // =========================
+    //  NEW MESSAGE
     const handleNewMessage = (newMessage) => {
-      console.log("🔥 RECEIVED:", newMessage);
+      console.log(" RECEIVED:", newMessage);
 
-      if (
-        newMessage.senderId?.toString() === selectedUser?._id?.toString() ||
-        newMessage.receiverId?.toString() === selectedUser?._id?.toString()
-      ) {
-        dispatch(addMessage(newMessage));
-      }
+      dispatch(addMessage(newMessage)); 
     };
 
     socket.on("newMessage", handleNewMessage);
 
-    // =========================
-    // SEEN
-    // =========================
+    //  SEEN
     const handleSeen = ({ senderId }) => {
       const updated = messages.map((msg) =>
         msg.senderId?.toString() === senderId
           ? { ...msg, seen: true }
           : msg
       );
-
       dispatch(setMessages(updated));
     };
 
     socket.on("messageSeen", handleSeen);
 
-    // =========================
     // DELIVERED
-    // =========================
     const handleDelivered = ({ messageId }) => {
       const updated = messages.map((msg) =>
         msg._id === messageId
           ? { ...msg, delivered: true }
           : msg
       );
-
       dispatch(setMessages(updated));
     };
 
     socket.on("messageDelivered", handleDelivered);
 
-    // =========================
-    // DELETE
-    // =========================
+    //  DELETE
     const handleDelete = (deletedMessage) => {
       const updated = messages.map((msg) =>
         msg._id === deletedMessage._id ? deletedMessage : msg
       );
-
       dispatch(setMessages(updated));
     };
 
     socket.on("messageDeleted", handleDelete);
 
-    // =========================
-    // ONLINE USERS
-    // =========================
+    //  ONLINE USERS
     const handleOnlineUsers = (users) => {
       dispatch(setOnlineUsers(users));
     };
 
     socket.on("getOnlineUsers", handleOnlineUsers);
 
-    // =========================
-    // CLEANUP
-    // =========================
+    //  CLEANUP
     return () => {
       socket.off("newMessage", handleNewMessage);
       socket.off("messageSeen", handleSeen);
@@ -93,7 +72,8 @@ const useGetRealTimeMessage = () => {
       socket.off("getOnlineUsers", handleOnlineUsers);
     };
 
-  }, [selectedUser?._id, messages, dispatch]);
+  }, [selectedUser?._id, dispatch]); 
+
 };
 
 export default useGetRealTimeMessage;
