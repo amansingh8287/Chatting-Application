@@ -3,7 +3,7 @@ import { Message } from "../models/messagemodel.js";
 import { io, getReceiverSocketId } from "../socket/socket.js";
 
 // =======================
-// ✅SEND MESSAGE (FINAL)
+// ✅ SEND MESSAGE
 // =======================
 export const sendMessage = async (req, res) => {
   try {
@@ -11,19 +11,16 @@ export const sendMessage = async (req, res) => {
     const receiverId = req.params.id;
     const { message } = req.body;
 
-    // find conversation
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     });
 
-    //  create if not exist
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [senderId, receiverId],
       });
     }
 
-    //  create message
     const newMessage = await Message.create({
       senderId,
       receiverId,
@@ -32,19 +29,15 @@ export const sendMessage = async (req, res) => {
       delivered: false,
     });
 
-    // save in conversation
     conversation.messages.push(newMessage._id);
     await conversation.save();
 
-    //  socket ids
     const receiverSocketId = getReceiverSocketId(receiverId.toString());
     const senderSocketId = getReceiverSocketId(senderId.toString());
 
     console.log("📡 Receiver socket:", receiverSocketId);
 
-    // =========================
-    // DELIVERED UPDATE
-    // =========================
+    // ✅ delivered
     if (receiverSocketId) {
       await Message.findByIdAndUpdate(newMessage._id, {
         delivered: true,
@@ -52,41 +45,77 @@ export const sendMessage = async (req, res) => {
       newMessage.delivered = true;
     }
 
-    // =========================
-    //  REALTIME SEND
-    // =========================
-
-    // receiver ko bhejo
+    // ✅ realtime send
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
-    // sender ko bhi bhejo (IMPORTANT)
     if (senderSocketId) {
       io.to(senderSocketId).emit("newMessage", newMessage);
     }
 
-    // =========================
-    // DELIVERED TICK
-    // =========================
+    // ✅ delivered tick
     if (receiverSocketId && senderSocketId) {
       io.to(senderSocketId).emit("messageDelivered", {
         messageId: newMessage._id,
       });
     }
 
-    // =========================
-    // RESPONSE
-    // =========================
     res.status(201).json(newMessage);
-
   } catch (error) {
-    console.log("❌ sendMessage error:", error.message);
-    res.status(500).json({ message: "Server error" });
+    console.log(error);
   }
 };
 
-// DELETE MESSAGE
+// =======================
+// ✅ GET MESSAGES
+// =======================
+export const getMessage = async (req, res) => {
+  try {
+    const receiverId = req.params.id;
+    const senderId = req.id;
+
+    const conversation = await Conversation.findOne({
+      participants: { $all: [senderId, receiverId] },
+    }).populate("messages");
+
+    res.status(200).json(conversation?.messages || []);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// =======================
+// ✅ MARK AS SEEN
+// =======================
+export const markSeen = async (req, res) => {
+  try {
+    const senderId = req.params.id;
+    const receiverId = req.id;
+
+    await Message.updateMany(
+      { senderId, receiverId, seen: false },
+      { $set: { seen: true } }
+    );
+
+    const senderSocketId = getReceiverSocketId(senderId.toString());
+
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messageSeen", {
+        senderId,
+        receiverId,
+      });
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// =======================
+// ✅ DELETE MESSAGE
+// =======================
 export const deleteMessage = async (req, res) => {
   try {
     const messageId = req.params.id;
@@ -102,7 +131,9 @@ export const deleteMessage = async (req, res) => {
 
     await message.save();
 
-    const receiverSocketId = getReceiverSocketId(message.receiverId.toString());
+    const receiverSocketId = getReceiverSocketId(
+      message.receiverId.toString()
+    );
 
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("messageDeleted", message);
