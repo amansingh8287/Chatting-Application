@@ -70,6 +70,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import HomePage from './components/HomePage';
 import Login from './components/Login';
 import { useEffect } from 'react';
+import { connectSocket } from "./socket";
 import { useSelector, useDispatch } from "react-redux";
 import { socket } from "./socket";
 import { setOnlineUsers } from './redux/userSlice';
@@ -87,8 +88,11 @@ function App() {
   const { authUser } = useSelector(store => store.user);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-  if (!authUser) return;
+   useEffect(() => {
+      if (authUser?._id) {
+        connectSocket(authUser._id);
+      }
+    }, [authUser]);
 
   socket.connect();
 

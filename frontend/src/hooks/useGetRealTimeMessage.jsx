@@ -21,11 +21,14 @@ import { addMessage, setMessages } from "../redux/messageSlice";
 import { socket } from "../socket";
 import { useSelector } from "react-redux";
 import { setOnlineUsers } from "../redux/userSlice";
+import { getSocket } from "../socket";
+
 
 const useGetRealTimeMessage = () => {
   const dispatch = useDispatch();
   const { selectedUser, authUser } = useSelector((store) => store.user);
   const { messages } = useSelector((store) => store.message);
+  const socket = getSocket();
 
   useEffect(() => {
     // 🔥 NEW MESSAGE

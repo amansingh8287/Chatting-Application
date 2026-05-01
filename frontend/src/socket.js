@@ -1,15 +1,19 @@
 
 import { io } from "socket.io-client";
 
-const user = JSON.parse(localStorage.getItem("user"));
-console.log("Socket user:", user);
+let socket = null;
 
-export const socket = io(
-  "https://chatting-application-twg7.onrender.com",
-  {
-    query: {
-      userId: user?._id
-    },
+export const connectSocket = (userId) => {
+  if (!userId) return;
+
+  socket = io("https://chatting-application-twg7.onrender.com", {
+    query: { userId },
     withCredentials: true
-  }
-);
+  });
+
+  socket.on("connect", () => {
+    console.log("✅ Connected:", socket.id);
+  });
+};
+
+export const getSocket = () => socket;
