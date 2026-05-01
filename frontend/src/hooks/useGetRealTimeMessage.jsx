@@ -18,7 +18,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { addMessage, setMessages } from "../redux/messageSlice";
-import { socket } from "../socket";
 import { useSelector } from "react-redux";
 import { setOnlineUsers } from "../redux/userSlice";
 import { getSocket } from "../socket";
@@ -31,7 +30,7 @@ const useGetRealTimeMessage = () => {
 
   useEffect(() => {
     // 🔥 NEW MESSAGE
-    socket.on("newMessage", (newMessage) => {
+    socket?.on("newMessage", (newMessage) => {
       if (
         newMessage.senderId?.toString() === selectedUser?._id?.toString() ||
         newMessage.receiverId?.toString() === selectedUser?._id?.toString()
