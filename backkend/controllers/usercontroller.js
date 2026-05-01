@@ -181,8 +181,8 @@ export const login = async (req, res) => {
             .status(200)
             .cookie("token", token, {
                 httpOnly: true,
-                secure: true,        // required for production
-                sameSite: "None",   //  FIX for Vercel + Render
+                secure: false,        
+                sameSite: "Lax",   
                 maxAge: 24 * 60 * 60 * 1000
             })
             .json({

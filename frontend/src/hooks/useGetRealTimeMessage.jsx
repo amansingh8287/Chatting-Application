@@ -1,4 +1,4 @@
-import { useEffect ,useState} from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addMessage, setMessages } from "../redux/messageSlice";
 import { setOnlineUsers } from "../redux/userSlice";
@@ -8,6 +8,7 @@ const useGetRealTimeMessage = () => {
   const [typingUser, setTypingUser] = useState(null);
   const dispatch = useDispatch();
   const { messages } = useSelector((store) => store.message);
+  const { selectedUser } = useSelector((store) => store.user);
 
   useEffect(() => {
     const socket = getSocket();
@@ -21,11 +22,11 @@ const useGetRealTimeMessage = () => {
       setTypingUser(null);
     });
 
-
     // ✅ NEW MESSAGE
     const handleNewMessage = (newMessage) => {
-      console.log("🔥 RECEIVED:", newMessage);
-      dispatch(addMessage(newMessage)); // ✔ correct
+      if (newMessage.senderId === selectedUser?._id) {
+        dispatch(addMessage(newMessage));
+      }
     };
 
     socket.on("newMessage", handleNewMessage);
@@ -71,8 +72,6 @@ const useGetRealTimeMessage = () => {
 
     socket.on("messageDeleted", handleDelete);
 
-
-    
     // ✅ ONLINE USERS (alag slice hai)
     const handleOnlineUsers = (users) => {
       dispatch(setOnlineUsers(users)); // ❗ FIX
@@ -91,7 +90,7 @@ const useGetRealTimeMessage = () => {
       socket.off("stopTyping");
     };
   }, []);
-   return { typingUser };
+  return { typingUser };
 };
 
 export default useGetRealTimeMessage;

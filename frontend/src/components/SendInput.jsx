@@ -48,7 +48,7 @@ const SendInput = () => {
         { withCredentials: true }
       );
 
-      dispatch(addMessage(res.data.newMessage));
+      dispatch(addMessage(res.data));
 
       // 🔥 stop typing on send
       const socket = getSocket();
