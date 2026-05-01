@@ -49,18 +49,15 @@
 
 // export default MessageContainer
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect} from "react";
 import SendInput from "./SendInput";
 import Messages from "./Messages";
 import { useSelector, useDispatch } from "react-redux";
 import { setSelectedUser } from "../redux/userSlice";
 import { getSocket } from "../socket";
 import chatBg from "../assets/chat-bg.jpg";
-import { useState } from "react";
-import { useState } from "react";
 import useGetRealTimeMessage from "../hooks/useGetRealTimeMessage";
 
-const [typingUser, setTypingUser] = useState(null);
 
 
 const MessageContainer = () => {
