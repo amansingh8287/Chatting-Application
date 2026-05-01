@@ -26,7 +26,7 @@ export const initSocket = (server) => {
 
     //  user ko map karo
     if (userId) {
-      userSocketMap[userId] = socket.id;
+      userSocketMap[userId.toString()] = socket.id;
     }
 
     //  online users broadcast
@@ -76,7 +76,7 @@ export const initSocket = (server) => {
 
 //  helper function (controllers me use hoga)
 export const getReceiverSocketId = (receiverId) => {
-  return userSocketMap[receiverId];
+  return userSocketMap[receiverId?.toString()];
 };
 
 // io export (controllers ke liye)

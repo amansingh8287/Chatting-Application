@@ -36,6 +36,7 @@ const useGetRealTimeMessage = () => {
       ) {
         dispatch(addMessage(newMessage));
       }
+      console.log("FRONTEND RECEIVED:", msg);
     });
 
     // 🔥 SEEN UPDATE

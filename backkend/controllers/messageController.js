@@ -38,7 +38,8 @@ export const sendMessage = async (req, res) => {
     await conversation.save();
 
     //  STEP 2: YAHAN YE CODE LAGANA HAI 
-    const receiverSocketId = getReceiverSocketId(receiverId);
+    const receiverSocketId = getReceiverSocketId(receiverId.toString());
+    console.log("Receiver socket:", receiverSocketId);
 
     if (receiverSocketId) {
       await Message.findByIdAndUpdate(newMessage._id, {
@@ -47,9 +48,11 @@ export const sendMessage = async (req, res) => {
 
       newMessage.delivered = true;
 
+      console.log("EMITTING MESSAGE");
+
       io.to(receiverSocketId).emit("newMessage", newMessage);
 
-      const senderSocketId = getReceiverSocketId(senderId);
+      const senderSocketId = getReceiverSocketId(senderId.toString());
       if (senderSocketId) {
         io.to(senderSocketId).emit("messageDelivered", {
           messageId: newMessage._id
