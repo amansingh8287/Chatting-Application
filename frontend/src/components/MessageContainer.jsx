@@ -74,10 +74,7 @@ const MessageContainer = () => {
   // 🔥 TYPING LISTENER
   useEffect(() => {
     socket?.on("typing", () => {
-      setTyping(true);
-
       setTimeout(() => {
-        setTyping(false);
       }, 1500);
     });
 
