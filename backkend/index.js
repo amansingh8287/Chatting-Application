@@ -25,11 +25,7 @@ app.use(cookieParser());
 
 //  FINAL CORS FIX
 app.use(cors({
-   origin: [
-    "https://chatting-application-eight.vercel.app",
-    "https://chatting-application-c3es60isb-workamansingh12-3760s-projects.vercel.app"
-  ],
-
+   origin: true,
   credentials: true
 }));
 

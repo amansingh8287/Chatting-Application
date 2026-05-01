@@ -1,12 +1,12 @@
-import Signup from './components/Signup';
-import './App.css';
+import Signup from "./components/Signup";
+import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import HomePage from './components/HomePage';
-import Login from './components/Login';
-import { useEffect } from 'react';
+import HomePage from "./components/HomePage";
+import Login from "./components/Login";
+import { useEffect } from "react";
 import { connectSocket, getSocket } from "./socket";
 import { useSelector, useDispatch } from "react-redux";
-import { setOnlineUsers } from './redux/userSlice';
+import { setOnlineUsers } from "./redux/userSlice";
 import UserProfileModal from "./components/UserProfileModal";
 import ForgotPassword from "./components/ForgotPassword";
 
@@ -18,11 +18,13 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  const { authUser } = useSelector(store => store.user);
+  const { authUser } = useSelector((store) => store.user);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!authUser?._id) return;
+    if (authUser?._id) {
+      connectSocket(authUser._id); 
+    }
 
     //  connect socket AFTER login
     connectSocket(authUser._id);
@@ -43,8 +45,7 @@ function App() {
     return () => {
       socket.disconnect();
     };
-
-  }, [authUser, dispatch]);
+  }, [authUser]);
 
   return (
     <div className="h-screen w-full">
