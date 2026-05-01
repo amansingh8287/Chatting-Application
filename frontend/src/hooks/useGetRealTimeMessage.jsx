@@ -31,11 +31,10 @@ const useGetRealTimeMessage = () => {
     // 🔥 NEW MESSAGE
     socket.on("newMessage", (newMessage) => {
       if (
-        newMessage.senderId === selectedUser?._id ||
-        newMessage.receiverId === selectedUser?._id
+        newMessage.senderId?.toString() === selectedUser?._id?.toString() ||
+        newMessage.receiverId?.toString() === selectedUser?._id?.toString()
       ) {
-         dispatch(addMessage(newMessage));
-       
+        dispatch(addMessage(newMessage));
       }
     });
 

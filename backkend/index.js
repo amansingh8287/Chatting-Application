@@ -25,7 +25,7 @@ app.use(cookieParser());
 
 //  FINAL CORS FIX
 app.use(cors({
-  origin: true,
+  origin: "https://chatting-application-eight.vercel.app",
   credentials: true
 }));
 

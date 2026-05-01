@@ -11,8 +11,7 @@ export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
       origin: [
-        "https://chatting-application-4yur.vercel.app",
-        "https://chatting-application-4yur-3gv84hfph.vercel.app",
+        "https://chatting-application-eight.vercel.app"
       ],
       methods: ["GET", "POST"],
       credentials: true,
