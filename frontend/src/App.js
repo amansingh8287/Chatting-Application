@@ -1,78 +1,11 @@
-// import Signup from './components/Signup';
-// import './App.css';
-// import {createBrowserRouter, RouterProvider} from "react-router-dom";
-// import HomePage from './components/HomePage';
-// import Login from './components/Login';
-// import { useEffect, useState } from 'react';
-// import {useSelector,useDispatch} from "react-redux";
-// import io from "socket.io-client";
-// // import { setSocket } from './redux/socketSlice';
-// import { socket } from "./socket";
-// import { setOnlineUsers } from './redux/userSlice';
-// import { BASE_URL } from '.';
-
-// const router = createBrowserRouter([
-//   {
-//     path:"/",
-//     element:<HomePage/>
-//   },
-//   {
-//     path:"/signup",
-//     element:<Signup/>
-//   },
-//   {
-//     path:"/login",
-//     element:<Login/>
-//   },
-
-// ])
-
-// function App() { 
-//   const {authUser} = useSelector(store=>store.user);
-//   const {socket} = useSelector(store=>store.socket);
-//   const dispatch = useDispatch();
-
-//   useEffect(()=>{
-//     if(authUser){
-//       const socketio = io(`${BASE_URL}`, {
-//           query:{
-//             userId:authUser._id
-//           }
-//       });
-//       dispatch(setSocket(socketio));
-
-//       socketio?.on('getOnlineUsers', (onlineUsers)=>{
-//         dispatch(setOnlineUsers(onlineUsers))
-//       });
-//       return () => socketio.close();
-//     }else{
-//       if(socket){
-//         socket.close();
-//         dispatch(setSocket(null));
-//       }
-//     }
-
-//   },[authUser]);
-
-//   return (
-//     <div className="p-4 h-screen flex items-center justify-center">
-//       <RouterProvider router={router}/>
-//     </div>
-
-//   );
-// }
-
-// export default App;
-
 import Signup from './components/Signup';
 import './App.css';
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import HomePage from './components/HomePage';
 import Login from './components/Login';
 import { useEffect } from 'react';
-import { connectSocket } from "./socket";
+import { connectSocket, getSocket } from "./socket";
 import { useSelector, useDispatch } from "react-redux";
-import { socket } from "./socket";
 import { setOnlineUsers } from './redux/userSlice';
 import UserProfileModal from "./components/UserProfileModal";
 import ForgotPassword from "./components/ForgotPassword";
@@ -88,34 +21,34 @@ function App() {
   const { authUser } = useSelector(store => store.user);
   const dispatch = useDispatch();
 
-   useEffect(() => {
-      if (authUser?._id) {
-        connectSocket(authUser._id);
-      }
-    }, [authUser]);
+  useEffect(() => {
+    if (!authUser?._id) return;
 
-  socket.connect();
+    //  connect socket AFTER login
+    connectSocket(authUser._id);
 
-  socket.on("connect", () => {
-    console.log("Connected:", socket.id);
+    const socket = getSocket();
 
-    // 🔥 connect ke baad emit
-    socket.emit("setup", authUser._id);
-  });
+    // connection log
+    socket.on("connect", () => {
+      console.log("Connected:", socket.id);
+    });
 
-  socket.on("getOnlineUsers", (onlineUsers) => {
-    dispatch(setOnlineUsers(onlineUsers));
-  });
+    // online users
+    socket.on("getOnlineUsers", (onlineUsers) => {
+      dispatch(setOnlineUsers(onlineUsers));
+    });
 
-  return () => {
-    socket.disconnect();
-  };
- }, [authUser]);
+    //  cleanup (VERY IMPORTANT)
+    return () => {
+      socket.disconnect();
+    };
+
+  }, [authUser, dispatch]);
 
   return (
     <div className="h-screen w-full">
       <RouterProvider router={router} />
-      {/* 🔥 PROFILE MODAL */}
       <UserProfileModal />
     </div>
   );
