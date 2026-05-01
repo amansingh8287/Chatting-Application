@@ -64,9 +64,11 @@ const MessageContainer = () => {
 
     const isOnline = onlineUsers?.includes(selectedUser?._id);
 
+    const socket = getSocket();
+
     // 🔥 TYPING LISTENER
     useEffect(() => {
-        socket.on("typing", () => {
+        socket?.on("typing", () => {
             setTyping(true);
 
             setTimeout(() => {
