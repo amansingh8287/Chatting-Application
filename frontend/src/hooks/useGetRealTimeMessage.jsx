@@ -29,18 +29,24 @@ const useGetRealTimeMessage = () => {
   const socket = getSocket();
 
   useEffect(() => {
-    // 🔥 NEW MESSAGE
-    socket?.on("newMessage", (newMessage) => {
-      if (
-        newMessage.senderId?.toString() === selectedUser?._id?.toString() ||
-        newMessage.receiverId?.toString() === selectedUser?._id?.toString()
-      ) {
-        dispatch(addMessage(newMessage));
-      }
-      console.log("FRONTEND RECEIVED:", newMessage);
-    });
+    const socket = getSocket();
+    
+  if (!socket) return; // important
 
-    // 🔥 SEEN UPDATE
+const handleNewMessage = (newMessage) => {
+  console.log("FRONTEND RECEIVED:", newMessage);
+
+  if (
+    newMessage.senderId?.toString() === selectedUser?._id?.toString() ||
+    newMessage.receiverId?.toString() === selectedUser?._id?.toString()
+  ) {
+    dispatch(addMessage(newMessage));
+  }
+};
+
+socket.on("newMessage", handleNewMessage);
+
+    //  SEEN UPDATE
     socket.on("messageSeen", ({ senderId }) => {
       dispatch((dispatch, getState) => {
         const { messages } = getState().message;
@@ -80,9 +86,9 @@ const useGetRealTimeMessage = () => {
     });
 
     return () => {
-      socket.off("newMessage");
-      socket.off("messageSeen");
-      socket.off("messageDeleted");
+      socket?.off("newMessage",handleNewMessage);
+      socket?.off("messageSeen");
+      socket?.off("messageDeleted");
     };
   }, [selectedUser?._id, dispatch]);
 };

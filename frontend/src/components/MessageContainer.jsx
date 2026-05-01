@@ -76,7 +76,7 @@ const MessageContainer = () => {
             }, 1500);
         });
 
-        return () => socket.off("typing");
+        return () => socket?.off("typing");
     }, []);
 
     return (
