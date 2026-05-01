@@ -25,10 +25,8 @@ function App() {
     //  SAFE CHECK
     if (!authUser?._id) return;
 
-    //  connect only once
-    connectSocket(authUser._id);
+    const socket = connectSocket(authUser._id);
 
-    const socket = getSocket();
 
     //  safety
     if (!socket) return;

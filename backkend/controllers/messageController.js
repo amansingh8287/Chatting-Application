@@ -39,7 +39,7 @@ export const sendMessage = async (req, res) => {
 
     console.log("Sender:", senderId.toString());
     console.log("Receiver:", receiverId.toString());
-    console.log("Socket Map:", userSocketMap);
+    // console.log("Socket Map:", userSocketMap);
 
     //  STEP 2: YAHAN YE CODE LAGANA HAI 
     const receiverSocketId = getReceiverSocketId(receiverId.toString());

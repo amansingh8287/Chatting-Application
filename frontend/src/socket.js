@@ -11,6 +11,8 @@ export const connectSocket = (userId) => {
     withCredentials: true,
     transports: ["websocket"] 
   });
+
+  return socket;
 };
 
 export const getSocket = () => socket;
