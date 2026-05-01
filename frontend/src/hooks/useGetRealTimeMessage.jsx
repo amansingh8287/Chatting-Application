@@ -25,6 +25,7 @@ import { setOnlineUsers } from "../redux/userSlice";
 const useGetRealTimeMessage = () => {
   const dispatch = useDispatch();
   const { selectedUser, authUser } = useSelector((store) => store.user);
+  const { messages } = useSelector((store) => store.message);
 
   useEffect(() => {
     // 🔥 NEW MESSAGE
@@ -33,7 +34,8 @@ const useGetRealTimeMessage = () => {
         newMessage.senderId === selectedUser?._id ||
         newMessage.receiverId === selectedUser?._id
       ) {
-        dispatch(addMessage(newMessage));
+         dispatch(addMessage(newMessage));
+       
       }
     });
 
@@ -81,7 +83,7 @@ const useGetRealTimeMessage = () => {
       socket.off("messageSeen");
       socket.off("messageDeleted");
     };
-  }, [selectedUser, authUser, dispatch]);
+  }, [selectedUser?._id, dispatch]);
 };
 
 export default useGetRealTimeMessage;
