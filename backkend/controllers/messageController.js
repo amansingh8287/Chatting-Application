@@ -93,28 +93,39 @@ export const markSeen = async (req, res) => {
     const senderId = req.params.id;
     const receiverId = req.id;
 
-    await Message.updateMany(
-      { senderId, receiverId, seen: false },
-      { $set: { seen: true } },
+    // 🔥 STEP 1: get only unseen messages
+    const unseenMessages = await Message.find({
+      senderId,
+      receiverId,
+      seen: false,
+    }).select("_id");
+
+    const messageIds = unseenMessages.map((msg) =>
+      msg._id.toString()
     );
 
+    // 🚫 nothing to update
+    if (messageIds.length === 0) {
+      return res.status(200).json({ success: true });
+    }
+
+    // 🔥 STEP 2: update only those
+    await Message.updateMany(
+      { _id: { $in: messageIds } },
+      { $set: { seen: true } }
+    );
+
+    // 🔥 STEP 3: emit realtime
     const senderSocketId = getReceiverSocketId(senderId.toString());
 
     if (senderSocketId) {
-      const updatedMessages = await Message.find({
-        senderId,
-        receiverId,
-        seen: true,
-      });
-
-      const seenMessageIds = updatedMessages.map((msg) => msg._id);
-
       io.to(senderSocketId).emit("messageSeen", {
-        messageIds: seenMessageIds,
+        messageIds,
       });
     }
 
     res.status(200).json({ success: true });
+
   } catch (error) {
     console.log(error);
   }

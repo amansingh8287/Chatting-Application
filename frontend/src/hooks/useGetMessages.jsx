@@ -32,12 +32,10 @@ import { BASE_URL } from "..";
 const useGetMessages = () => {
   const { selectedUser } = useSelector((store) => store.user);
   const dispatch = useDispatch();
+  const { messages } = useSelector(store => store.message);
 
   useEffect(() => {
-    if (!selectedUser?._id) {
-      dispatch(clearMessages());
-      return;
-    }
+    if (!selectedUser?._id) return;
 
     const fetchMessages = async () => {
       try {
@@ -61,7 +59,7 @@ const useGetMessages = () => {
     };
 
     fetchMessages();
-  }, [selectedUser?._id]);
+  }, [selectedUser?._id,messages.length]);
 };
 
 export default useGetMessages;
