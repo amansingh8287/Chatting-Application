@@ -26,7 +26,7 @@ const UserProfileModal = () => {
 
         {/* 👤 IMAGE */}
         <img
-          src={profileUser?.profilePhoto}
+          src={profileUser?.profilePhoto}  alt="user-profile"
           className="w-24 h-24 rounded-full mx-auto mb-3 object-cover"
         />
 
