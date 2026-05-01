@@ -1,41 +1,45 @@
 import { Server } from "socket.io";
 import User from "../models/usermodel.js";
 
-//  userId -> socketId mapping
+// userId -> socketId mapping
 const userSocketMap = {};
 
 let io;
 
-//  init function (index.js se call hoga)
 export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-       origin:true,
+      origin: true,
       methods: ["GET", "POST"],
       credentials: true,
     },
   });
 
   io.on("connection", (socket) => {
-    //  IMPORTANT: userId handshake se lo
     const userId = socket.handshake.query.userId;
 
-    console.log("User connected:", userId);
-
-    //  user ko map karo
-    if (userId) {
-      userSocketMap[userId.toString()] = socket.id;
-      console.log("USER SOCKET MAP:", userSocketMap);
+    // SAFETY CHECK
+    if (!userId || userId === "undefined") {
+      console.log("❌ Invalid userId");
+      return;
     }
 
-    //  online users broadcast
+    console.log("✅ User connected:", userId);
+
+    // ALWAYS STRING
+    userSocketMap[userId.toString()] = socket.id;
+
+    console.log("🔥 USER SOCKET MAP:", userSocketMap);
+
+    // broadcast online users
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
     // =========================
-    //  TYPING EVENT
+    // TYPING EVENT
     // =========================
     socket.on("typing", ({ receiverId }) => {
-      const receiverSocketId = userSocketMap[receiverId];
+      const receiverSocketId = userSocketMap[receiverId?.toString()];
+
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("typing", {
           senderId: userId,
@@ -44,7 +48,8 @@ export const initSocket = (server) => {
     });
 
     socket.on("stopTyping", ({ receiverId }) => {
-      const receiverSocketId = userSocketMap[receiverId];
+      const receiverSocketId = userSocketMap[receiverId?.toString()];
+
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("stopTyping", {
           senderId: userId,
@@ -53,30 +58,37 @@ export const initSocket = (server) => {
     });
 
     // =========================
-    //  DISCONNECT
+    // DISCONNECT
     // =========================
     socket.on("disconnect", async () => {
-      console.log("User disconnected:", userId);
+      console.log("❌ User disconnected:", userId);
 
-     if (!userId || userId === "undefined") return;
-      //  remove from online users
-      delete userSocketMap[userId];
+      if (!userId || userId === "undefined") return;
 
-      //  update last seen
-      await User.findByIdAndUpdate(userId, {
-        lastSeen: new Date(),
-      });
+      //  REMOVE CORRECTLY
+      delete userSocketMap[userId.toString()];
 
-      // 🔥 broadcast updated list
+      try {
+        //  SAFE DB UPDATE
+        await User.findByIdAndUpdate(userId.toString(), {
+          lastSeen: new Date(),
+        });
+      } catch (err) {
+        console.log("LastSeen update error:", err.message);
+      }
+
+      // broadcast updated users
       io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+      console.log("UPDATED MAP:", userSocketMap);
     });
   });
 };
 
-//  helper function (controllers me use hoga)
+//  HELPER FUNCTION (IMPORTANT FIX)
 export const getReceiverSocketId = (receiverId) => {
   return userSocketMap[receiverId?.toString()];
 };
 
-// io export (controllers ke liye)
+// export io
 export { io };

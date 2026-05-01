@@ -22,30 +22,37 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (authUser?._id) {
-      connectSocket(authUser._id); 
-    }
+    //  SAFE CHECK
+    if (!authUser?._id) return;
 
-    //  connect socket AFTER login
+    //  connect only once
     connectSocket(authUser._id);
 
     const socket = getSocket();
 
-    // connection log
+    //  safety
+    if (!socket) return;
+
+    //  connection log
     socket.on("connect", () => {
-      console.log("Connected:", socket.id);
+      console.log("✅ Connected:", socket.id);
     });
 
-    // online users
-    socket.on("getOnlineUsers", (onlineUsers) => {
+    //  online users
+    const handleOnlineUsers = (onlineUsers) => {
+      console.log("ONLINE USERS:", onlineUsers);
       dispatch(setOnlineUsers(onlineUsers));
-    });
+    };
 
-    //  cleanup (VERY IMPORTANT)
+    socket.on("getOnlineUsers", handleOnlineUsers);
+
+    //  CLEANUP
     return () => {
+      socket.off("getOnlineUsers", handleOnlineUsers);
       socket.disconnect();
     };
-  }, [authUser]);
+
+  }, [authUser, dispatch]);
 
   return (
     <div className="h-screen w-full">

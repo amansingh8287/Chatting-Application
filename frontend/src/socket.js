@@ -8,7 +8,8 @@ export const connectSocket = (userId) => {
 
   socket = io("https://chatting-application-twg7.onrender.com", {
     query: { userId },
-    withCredentials: true
+    withCredentials: true,
+    transports: ["websocket"] 
   });
 };
 
