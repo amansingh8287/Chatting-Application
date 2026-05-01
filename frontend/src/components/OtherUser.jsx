@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSelectedUser } from "../redux/userSlice";
 import { setProfileUser, setShowProfile } from "../redux/userSlice";
 
-const OtherUser = ({ user }) => {
+const OtherUser = ({ user, isOnline }) => {
   const dispatch = useDispatch();
   const { selectedUser, onlineUsers } = useSelector((store) => store.user);
   const isOnline = onlineUsers?.includes(user._id);
@@ -43,11 +43,11 @@ const OtherUser = ({ user }) => {
             <div className="flex flex-col">
               <p>{user?.fullName}</p>
 
-              <span className="text-xs">
-                {isOnline
-                  ? "🟢 Online"
-                  : `Last seen today at ${new Date(user?.lastSeen).toLocaleTimeString()}`}
-              </span>
+              {isOnline ? (
+                <span className="text-green-500">● Online</span>
+              ) : (
+                <span className="text-gray-400">Offline</span>
+              )}
             </div>
           </div>
         </div>

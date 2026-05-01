@@ -17,17 +17,19 @@ const useGetRealTimeMessage = () => {
     const handleNewMessage = (newMessage) => {
       console.log(" RECEIVED:", newMessage);
 
-      dispatch(addMessage(newMessage)); 
+      dispatch(addMessage(newMessage));
     };
 
-    socket.on("newMessage", handleNewMessage);
+    socket.on("newMessage", (newMessage) => {
+      console.log(" RECEIVED:", newMessage);
+
+      dispatch(addMessage(newMessage)); //  REMOVE FILTER
+    });
 
     //  SEEN
     const handleSeen = ({ senderId }) => {
       const updated = messages.map((msg) =>
-        msg.senderId?.toString() === senderId
-          ? { ...msg, seen: true }
-          : msg
+        msg.senderId?.toString() === senderId ? { ...msg, seen: true } : msg,
       );
       dispatch(setMessages(updated));
     };
@@ -37,9 +39,7 @@ const useGetRealTimeMessage = () => {
     // DELIVERED
     const handleDelivered = ({ messageId }) => {
       const updated = messages.map((msg) =>
-        msg._id === messageId
-          ? { ...msg, delivered: true }
-          : msg
+        msg._id === messageId ? { ...msg, delivered: true } : msg,
       );
       dispatch(setMessages(updated));
     };
@@ -49,7 +49,7 @@ const useGetRealTimeMessage = () => {
     //  DELETE
     const handleDelete = (deletedMessage) => {
       const updated = messages.map((msg) =>
-        msg._id === deletedMessage._id ? deletedMessage : msg
+        msg._id === deletedMessage._id ? deletedMessage : msg,
       );
       dispatch(setMessages(updated));
     };
@@ -71,9 +71,7 @@ const useGetRealTimeMessage = () => {
       socket.off("messageDeleted", handleDelete);
       socket.off("getOnlineUsers", handleOnlineUsers);
     };
-
-  }, [selectedUser?._id, dispatch]); 
-
+  }, []);
 };
 
 export default useGetRealTimeMessage;
