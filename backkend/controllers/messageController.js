@@ -2,26 +2,23 @@ import { Conversation } from "../models/conversationmodel.js";
 import { Message } from "../models/messagemodel.js";
 import { io, getReceiverSocketId } from "../socket/socket.js";
 
-//  SEND MESSAGE
+// SEND MESSAGE
 export const sendMessage = async (req, res) => {
   try {
     const senderId = req.id;
     const receiverId = req.params.id;
     const { message } = req.body;
 
-    //  1. find conversation
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] }
     });
 
-    //  2. agar nahi mila → create karo
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [senderId, receiverId]
       });
     }
 
-    //  STEP 1: message create
     const newMessage = await Message.create({
       senderId,
       receiverId,
@@ -30,41 +27,38 @@ export const sendMessage = async (req, res) => {
       delivered: false
     });
 
-    if (newMessage) {
-      conversation.messages.push(newMessage._id);
-    }
-
-    // 5. save karo
+    conversation.messages.push(newMessage._id);
     await conversation.save();
 
-    console.log("Sender:", senderId.toString());
-    console.log("Receiver:", receiverId.toString());
-    // console.log("Socket Map:", userSocketMap);
-
-    //  STEP 2: YAHAN YE CODE LAGANA HAI 
     const receiverSocketId = getReceiverSocketId(receiverId.toString());
-    console.log("Receiver socket:", receiverSocketId);
 
+    console.log("📡 Receiver socket:", receiverSocketId);
+
+    //  DELIVERED UPDATE
     if (receiverSocketId) {
       await Message.findByIdAndUpdate(newMessage._id, {
         delivered: true
       });
 
       newMessage.delivered = true;
-
-      console.log("EMITTING MESSAGE");
-
-      io.to(receiverSocketId).emit("newMessage", newMessage);
-
-      const senderSocketId = getReceiverSocketId(senderId.toString());
-      if (senderSocketId) {
-        io.to(senderSocketId).emit("messageDelivered", {
-          messageId: newMessage._id
-        });
-      }
     }
-    
-    //  STEP 3: response
+
+    // 🔥 FINAL EMIT (IMPORTANT FIX)
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    } else {
+      console.log("❌ Receiver offline → broadcasting");
+      io.emit("newMessage", newMessage); // 🔥 fallback
+    }
+
+    // 🔥 sender ko bhi notify
+    const senderSocketId = getReceiverSocketId(senderId.toString());
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messageDelivered", {
+        messageId: newMessage._id
+      });
+    }
+
     res.status(201).json(newMessage);
 
   } catch (error) {
@@ -72,7 +66,7 @@ export const sendMessage = async (req, res) => {
   }
 };
 
-//  GET MESSAGES ( THIS WAS MISSING)
+// GET MESSAGES
 export const getMessage = async (req, res) => {
   try {
     const receiverId = req.params.id;
@@ -88,35 +82,34 @@ export const getMessage = async (req, res) => {
   }
 };
 
-// ✅ MARK AS SEEN
+// MARK AS SEEN
 export const markSeen = async (req, res) => {
-    try {
-        const senderId = req.params.id;
-        const receiverId = req.id;
+  try {
+    const senderId = req.params.id;
+    const receiverId = req.id;
 
-        //  update DB
-        const updatedMessages = await Message.updateMany(
-            { senderId, receiverId, seen: false },
-            { $set: { seen: true } }
-        );
+    await Message.updateMany(
+      { senderId, receiverId, seen: false },
+      { $set: { seen: true } }
+    );
 
-        const senderSocketId = getReceiverSocketId(senderId);
+    const senderSocketId = getReceiverSocketId(senderId.toString());
 
-        // IMPORTANT CHANGE (payload bhejo)
-        if (senderSocketId) {
-            io.to(senderSocketId).emit("messageSeen", {
-                senderId,
-                receiverId
-            });
-        }
-
-        res.status(200).json({ success: true });
-
-    } catch (error) {
-        console.log(error);
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messageSeen", {
+        senderId,
+        receiverId
+      });
     }
+
+    res.status(200).json({ success: true });
+
+  } catch (error) {
+    console.log(error);
+  }
 };
 
+// DELETE MESSAGE
 export const deleteMessage = async (req, res) => {
   try {
     const messageId = req.params.id;
@@ -127,21 +120,19 @@ export const deleteMessage = async (req, res) => {
       return res.status(404).json({ message: "Message not found" });
     }
 
-    //  WhatsApp style delete
     message.message = "This message was deleted";
     message.deleted = true;
 
     await message.save();
 
-    const receiverSocketId = getReceiverSocketId(message.receiverId);
+    const receiverSocketId = getReceiverSocketId(message.receiverId.toString());
 
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("messageDeleted", message);
     }
 
-    res.json({ success: true, message });
+    res.status(200).json({ success: true, message });
 
-    res.status(200).json({ success: true });
   } catch (error) {
     console.log(error);
   }
