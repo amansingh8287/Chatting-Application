@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { addMessage, setMessages } from "../redux/messageSlice";
 import { setOnlineUsers } from "../redux/userSlice";
 import { getSocket } from "../socket";
+import axios from "axios";
+import { BASE_URL } from "../index";
 
 const useGetRealTimeMessage = () => {
   const [typingUser, setTypingUser] = useState(null);
