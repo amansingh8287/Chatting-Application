@@ -27,6 +27,7 @@ export const initSocket = (server) => {
     //  user ko map karo
     if (userId) {
       userSocketMap[userId.toString()] = socket.id;
+      console.log("USER SOCKET MAP:", userSocketMap);
     }
 
     //  online users broadcast
