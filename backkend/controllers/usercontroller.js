@@ -182,7 +182,7 @@ export const login = async (req, res) => {
             .cookie("token", token, {
                 httpOnly: true,
                 secure: true,        // required for production
-                sameSite: "None",    // 🔥 FIX for Vercel + Render
+                sameSite: "None",   //  FIX for Vercel + Render
                 maxAge: 24 * 60 * 60 * 1000
             })
             .json({
