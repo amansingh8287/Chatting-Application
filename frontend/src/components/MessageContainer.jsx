@@ -49,7 +49,7 @@
 
 // export default MessageContainer
 
-import React, { useEffect} from "react";
+import React, { useEffect } from "react";
 import SendInput from "./SendInput";
 import Messages from "./Messages";
 import { useSelector, useDispatch } from "react-redux";
@@ -57,8 +57,6 @@ import { setSelectedUser } from "../redux/userSlice";
 import { getSocket } from "../socket";
 import chatBg from "../assets/chat-bg.jpg";
 import useGetRealTimeMessage from "../hooks/useGetRealTimeMessage";
-
-
 
 const MessageContainer = () => {
   const { selectedUser, authUser, onlineUsers } = useSelector(
@@ -74,8 +72,7 @@ const MessageContainer = () => {
   // 🔥 TYPING LISTENER
   useEffect(() => {
     socket?.on("typing", () => {
-      setTimeout(() => {
-      }, 1500);
+      setTimeout(() => {}, 1500);
     });
 
     return () => socket?.off("typing");
@@ -114,10 +111,11 @@ const MessageContainer = () => {
             </div>
 
             {/* 🔥 TYPING INDICATOR */}
-            {typingUser === selectedUser?._id && (
-              <p className="text-sm text-gray-400">Typing...</p>
+            {typingUser && (
+              <p className="text-sm text-gray-400">
+                {selectedUser?.username} is typing...
+              </p>
             )}
-
             {/* MESSAGES */}
             <Messages />
 
