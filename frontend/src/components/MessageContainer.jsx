@@ -63,7 +63,7 @@ const MessageContainer = () => {
     (store) => store.user,
   );
 
-  const { typingUser } = useGetRealTimeMessage();
+  const { isTyping } = useGetRealTimeMessage();
 
   const isOnline = onlineUsers?.includes(selectedUser?._id);
 
