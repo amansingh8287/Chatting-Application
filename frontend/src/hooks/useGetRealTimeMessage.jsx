@@ -7,7 +7,7 @@ import axios from "axios";
 import { BASE_URL } from "../index";
 
 const useGetRealTimeMessage = () => {
-  // const [typingUser, setTypingUser] = useState(null);
+  // const [typingUser, setTypingUser] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const dispatch = useDispatch();
   const { messages } = useSelector((store) => store.message);
@@ -21,13 +21,13 @@ const useGetRealTimeMessage = () => {
       console.log(" typing received:", senderId);
 
       if (senderId?.toString() === selectedUser?._id?.toString()) {
-        setTypingUser(true);
+        setIsTyping(true);
       }
     });
 
     socket.on("stopTyping", ({ senderId }) => {
       if (senderId?.toString() === selectedUser?._id?.toString()) {
-        setTypingUser(false); 
+        setIsTyping(false);
       }
     });
 
@@ -108,7 +108,7 @@ const useGetRealTimeMessage = () => {
       socket.off("stopTyping");
     };
   }, [selectedUser?._id]);
-  return { typingUser };
+  return { isTyping };
 };
 
 export default useGetRealTimeMessage;

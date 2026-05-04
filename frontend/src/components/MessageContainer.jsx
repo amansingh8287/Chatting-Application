@@ -111,7 +111,7 @@ const MessageContainer = () => {
             </div>
 
             {/* 🔥 TYPING INDICATOR */}
-            {typingUser && (
+            {isTyping && (
               <p className="text-sm text-gray-400">
                 {selectedUser?.username} is typing...
               </p>
