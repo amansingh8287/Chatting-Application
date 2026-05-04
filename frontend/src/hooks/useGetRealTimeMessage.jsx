@@ -24,7 +24,7 @@ const useGetRealTimeMessage = () => {
       }
     });
 
-    socket.on("stopTyping", () => {
+    socket.on("stopTyping", ({ senderId }) => {
       if (senderId === selectedUser?._id) {
         setTypingUser(null);
       }
@@ -106,7 +106,7 @@ const useGetRealTimeMessage = () => {
       socket.off("typing");
       socket.off("stopTyping");
     };
-  }, [selectedUser?._id]);
+  }, []);
   return { typingUser };
 };
 
