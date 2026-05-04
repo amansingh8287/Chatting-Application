@@ -14,22 +14,25 @@ const useGetRealTimeMessage = () => {
   const { selectedUser } = useSelector((store) => store.user);
 
   useEffect(() => {
-    const socket = getSocket();
-    if (!socket) return;
+  const socket = getSocket();
+  if (!socket) return;
 
-    socket.on("typing", ({ senderId }) => {
-      console.log(" typing received:", senderId);
+  const handleTyping = ({ senderId }) => {
+    console.log("🔥 typing received:", senderId);
 
-      if (senderId?.toString() === selectedUser?._id?.toString()) {
-        setIsTyping(true);
-      }
-    });
+    if (senderId?.toString() === selectedUser?._id?.toString()) {
+      setIsTyping(true);
+    }
+  };
 
-    socket.on("stopTyping", ({ senderId }) => {
-      if (senderId?.toString() === selectedUser?._id?.toString()) {
-        setIsTyping(false);
-      }
-    });
+  const handleStopTyping = ({ senderId }) => {
+    if (senderId?.toString() === selectedUser?._id?.toString()) {
+      setIsTyping(false);
+    }
+  };
+
+  socket.on("typing", handleTyping);
+  socket.on("stopTyping", handleStopTyping);
 
     //  NEW MESSAGE
     const handleNewMessage = async (newMessage) => {
@@ -107,7 +110,7 @@ const useGetRealTimeMessage = () => {
       socket.off("typing");
       socket.off("stopTyping");
     };
-  }, [selectedUser?._id]);
+  }, [selectedUser]);
   return { isTyping };
 };
 
