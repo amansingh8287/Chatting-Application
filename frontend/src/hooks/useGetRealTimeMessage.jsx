@@ -17,11 +17,17 @@ const useGetRealTimeMessage = () => {
     if (!socket) return;
 
     socket.on("typing", ({ senderId }) => {
-      setTypingUser(senderId);
+      console.log(" typing received:", senderId);
+
+      if(senderId === selectedUser?._id) {
+        setTypingUser(senderId);
+      }
     });
 
     socket.on("stopTyping", () => {
-      setTypingUser(null);
+      if (senderId === selectedUser?._id) {
+        setTypingUser(null);
+      }
     });
 
     // ✅ NEW MESSAGE
@@ -100,7 +106,7 @@ const useGetRealTimeMessage = () => {
       socket.off("typing");
       socket.off("stopTyping");
     };
-  }, []);
+  }, [selectedUser?._id]);
   return { typingUser };
 };
 
