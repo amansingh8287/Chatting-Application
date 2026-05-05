@@ -8,6 +8,7 @@ import { getSocket } from "../socket";
 
 const SendInput = () => {
   const [message, setMessage] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
   const dispatch = useDispatch();
   const { selectedUser } = useSelector((store) => store.user);
   const { authUser } = useSelector((store) => store.user);
@@ -47,12 +48,13 @@ const SendInput = () => {
     try {
       const res = await axios.post(
         `${BASE_URL}/api/v1/message/send/${selectedUser?._id}`,
-        { message },
+        { message,scheduledTime: scheduleTime || null, },
         { withCredentials: true },
       );
 
-      dispatch(addMessage(res.data));
-
+      if (!scheduleTime) {
+        dispatch(addMessage(res.data));
+      }
       //  stop typing on send
       const socket = getSocket();
 
@@ -66,10 +68,18 @@ const SendInput = () => {
     }
 
     setMessage("");
+     setScheduleTime("");
   };
 
   return (
     <form onSubmit={onSubmitHandler} className="p-4">
+       <input
+        type="datetime-local"
+        value={scheduleTime}
+        onChange={(e) => setScheduleTime(e.target.value)}
+        className="border p-2 rounded w-full text-black"
+      />
+      
       <div
         className="flex items-center gap-2 
         bg-white/30 backdrop-blur-md border border-white/20 

@@ -7,6 +7,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import http from "http";
 import { initSocket } from "./socket/socket.js";
+import { Message } from "./models/messagemodel.js";
+import { io, getReceiverSocketId } from "./socket/socket.js";
 
 dotenv.config();
 
@@ -31,22 +33,71 @@ app.use(cors({
 
 app.set("trust proxy", 1);
 
-// 🔥 routes
+// routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/message", messageRoute);
+
+setInterval(async () => {
+  try {
+    const now = new Date();
+
+    const messages = await Message.find({
+      isScheduled: true,
+      scheduledTime: { $lte: now },
+    });
+
+    for (let msg of messages) {
+      msg.isScheduled = false;
+      await msg.save();
+
+      const receiverSocketId = getReceiverSocketId(
+        msg.receiverId.toString()
+      );
+
+      const senderSocketId = getReceiverSocketId(
+        msg.senderId.toString()
+      );
+
+      // delivered
+      if (receiverSocketId) {
+        msg.delivered = true;
+        await msg.save();
+      }
+
+      // realtime send
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("newMessage", msg);
+      }
+
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("newMessage", msg);
+      }
+
+      // delivered tick
+      if (receiverSocketId && senderSocketId) {
+        io.to(senderSocketId).emit("messageDelivered", {
+          messageId: msg._id,
+        });
+      }
+    }
+
+  } catch (err) {
+    console.log("Scheduler error:", err);
+  }
+}, 5000);
 
 // 🔥 start server properly
 const startServer = async () => {
   try {
     await connectDB();
-    console.log("✅ DB connected");
+    console.log(" DB connected");
 
     server.listen(PORT, () => {
-      console.log("🚀 Server running on port", PORT);
+      console.log(" Server running on port", PORT);
     });
 
   } catch (error) {
-    console.log("❌ Error starting server:", error);
+    console.log("Error starting server:", error);
   }
 };
 

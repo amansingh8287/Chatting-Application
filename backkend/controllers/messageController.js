@@ -10,6 +10,7 @@ export const sendMessage = async (req, res) => {
     const senderId = req.id;
     const receiverId = req.params.id;
     const { message } = req.body;
+     const { message, scheduledTime } = req.body;
 
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
@@ -21,16 +22,31 @@ export const sendMessage = async (req, res) => {
       });
     }
 
+    //  check if scheduled
+    const isScheduled =
+      scheduledTime && new Date(scheduledTime) > new Date();
+
+
     const newMessage = await Message.create({
       senderId,
       receiverId,
       message,
       seen: false,
       delivered: false,
+      scheduledTime: isScheduled ? scheduledTime : null,
+      isScheduled,
     });
 
     conversation.messages.push(newMessage._id);
     await conversation.save();
+
+    // agar scheduled hai → abhi send nahi karna
+    if (isScheduled) {
+      return res.status(201).json({
+        message: "Message scheduled successfully",
+        data: newMessage,
+      });
+    }
 
     const receiverSocketId = getReceiverSocketId(receiverId.toString());
     const senderSocketId = getReceiverSocketId(senderId.toString());
