@@ -9,8 +9,7 @@ export const sendMessage = async (req, res) => {
   try {
     const senderId = req.id;
     const receiverId = req.params.id;
-    const { message } = req.body;
-     const { message, scheduledTime } = req.body;
+    const { message, scheduledTime } = req.body;
 
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
