@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
@@ -50,10 +49,9 @@ const Message = ({ message }) => {
     }
   };
 
-  const displayTime =
-    message?.scheduledTime && !message?.isScheduled
-      ? message.scheduledTime
-      : message?.createdAt;
+  const displayTime = message?.scheduledTime
+    ? message.scheduledTime
+    : message?.createdAt;
 
   return (
     <div
@@ -82,7 +80,11 @@ const Message = ({ message }) => {
           <span
             className={`text-xs ${isMe ? "text-gray-200" : "text-gray-600"}`}
           >
-            {formatTime(displayTime)}
+            {formatTime(
+              message?.scheduledTime
+                ? message.scheduledTime
+                : message?.createdAt,
+            )}
           </span>
 
           {/* ✔✔ SEEN */}
@@ -95,10 +97,8 @@ const Message = ({ message }) => {
               <span className="text-gray-400">✔</span>
             ))}
         </div>
-         {message?.isScheduled && (
-          <span className="text-xs text-yellow-400">
-            Scheduled
-          </span>
+        {message?.isScheduled && (
+          <span className="text-xs text-yellow-400">Scheduled</span>
         )}
       </div>
     </div>
