@@ -44,7 +44,7 @@ setInterval(async () => {
     console.log(" NOW:", now.toISOString());
 
     //  sirf pending messages lao
-    const messages = await Message.find({
+    const messages = await Message.find({ 
       isScheduled: true
     });
 

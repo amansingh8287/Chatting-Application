@@ -15,11 +15,6 @@ const SendInput = () => {
 
   const typingTimeout = useRef(null); // important
 
-  const localToUTC = (dateTime) => {
-    const local = new Date(dateTime);
-    return new Date(local.getTime() - local.getTimezoneOffset() * 60000);
-  };
-
   const handleTyping = (value) => {
     setMessage(value);
 
@@ -56,13 +51,19 @@ const SendInput = () => {
     }
 
     try {
+      let utcDate = null;
+
+      if (scheduleTime) {
+        const localDate = new Date(scheduleTime);
+        utcDate = new Date(
+          localDate.getTime() - localDate.getTimezoneOffset() * 60000,
+        );
+      }
       const res = await axios.post(
         `${BASE_URL}/api/v1/message/send/${selectedUser?._id}`,
         {
           message,
-          scheduledTime: scheduleTime
-            ? new Date(scheduleTime)
-            : null,
+          scheduledTime: utcDate,
         },
 
         { withCredentials: true },
