@@ -45,41 +45,54 @@ const SendInput = () => {
         if (transcript) {
           setMessage((prev) => prev + " " + transcript);
         }
+
+        //  reset timer on speech
+        if (silenceTimeoutRef.current) {
+          clearTimeout(silenceTimeoutRef.current);
+        }
+
+        silenceTimeoutRef.current = setTimeout(() => {
+          console.log("⏹ Auto stop (2s silence)");
+          recognition.stop();
+          setIsListening(false);
+          isListeningRef.current = false;
+        }, 1500);
       };
 
       recognition.onend = () => {
         console.log("🎤 stopped");
 
-        if (isListening) {
+        // 🔥 clear timeout
+        if (silenceTimeoutRef.current) {
+          clearTimeout(silenceTimeoutRef.current);
+        }
+
+        if (isListeningRef.current) {
           try {
-            recognition.start(); //  restart
+            recognition.start();
           } catch {
             console.log("restart failed");
           }
-        } else {
-          setIsListening(false);
         }
       };
 
       recognition.onerror = (err) => {
         console.log("🎤 ERROR:", err.error);
 
-        if (err.error === "network") {
-          console.log("🌐 Network issue — stopping mic");
+        //  clear timeout
+        if (silenceTimeoutRef.current) {
+          clearTimeout(silenceTimeoutRef.current);
+        }
 
+        if (err.error === "network") {
+          console.log("🌐 network issue");
           setIsListening(false);
           isListeningRef.current = false;
-
-          //  DO NOT restart
           return;
         }
 
         if (err.error === "not-allowed") {
           alert("Mic permission denied ❌");
-        }
-
-        if (err.error === "no-speech") {
-          console.log("No speech detected");
         }
 
         setIsListening(false);
@@ -108,6 +121,13 @@ const SendInput = () => {
     } catch {
       console.log("already started");
     }
+    //  auto stop if no speech
+    silenceTimeoutRef.current = setTimeout(() => {
+      console.log("⏹ No speech → auto stop");
+      recognition.stop();
+      setIsListening(false);
+      isListeningRef.current = false;
+    }, 1500);
   };
 
   const handleTyping = (value) => {
