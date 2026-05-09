@@ -18,6 +18,7 @@ const SendInput = () => {
   const typingTimeout = useRef(null); // important
 
   const recognitionRef = useRef(null);
+  const isListeningRef = useRef(false);
 
   useEffect(() => {
     const SpeechRecognition =
@@ -27,8 +28,44 @@ const SendInput = () => {
       const recognition = new SpeechRecognition();
 
       recognition.continuous = true;
-      recognition.interimResults = true; //  important
+      recognition.interimResults = true;
       recognition.lang = "en-US";
+      // recognition.lang = "hi-IN";
+
+      //  HANDLERS HERE
+      recognition.onresult = (event) => {
+        let transcript = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            transcript += event.results[i][0].transcript;
+          }
+        }
+
+        if (transcript) {
+          setMessage((prev) => prev + " " + transcript);
+        }
+      };
+
+      recognition.onend = () => {
+        console.log("🎤 stopped");
+
+        if (isListening) {
+          try {
+            recognition.start(); //  restart
+          } catch {
+            console.log("restart failed");
+          }
+        } else {
+          setIsListening(false);
+        }
+      };
+
+      recognition.onerror = (err) => {
+        console.log("🎤 ERROR:", err.error);
+        setIsListening(false);
+        isListeningRef.current = false;
+      };
 
       recognitionRef.current = recognition;
     }
@@ -36,40 +73,22 @@ const SendInput = () => {
 
   const startListening = () => {
     const recognition = recognitionRef.current;
+
     if (!recognition) {
-      alert("Speech Recognition not supported in this browser");
+      alert("Speech not supported");
       return;
     }
 
+    if (isListening) return;
+
     setIsListening(true);
-    recognition.start();
+    isListeningRef.current = true;
 
-    recognition.onresult = (event) => {
-      let transcript = "";
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-
-      console.log("🎤 Voice:", transcript);
-
-      setMessage(transcript);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.onerror = (err) => {
-      console.log("🎤 ERROR TYPE:", err.error);
-
-      if (err.error === "no-speech") {
-        console.log("🔁 retry...");
-        recognition.start(); //  auto restart
-      }
-
-      setIsListening(false);
-    };
+    try {
+      recognition.start();
+    } catch {
+      console.log("already started");
+    }
   };
 
   const handleTyping = (value) => {
@@ -78,13 +97,9 @@ const SendInput = () => {
     const socket = getSocket();
     if (!socket || !selectedUser?._id) return;
 
-    // typing emit
-    if (socket && selectedUser?._id) {
-      socket.emit("typing", {
-        receiverId: selectedUser._id,
-      });
-    }
-
+    socket.emit("typing", {
+      receiverId: selectedUser._id,
+    });
     // clear previous timeout
     if (typingTimeout.current) {
       clearTimeout(typingTimeout.current);
@@ -153,8 +168,9 @@ const SendInput = () => {
         <button
           type="button"
           onClick={startListening}
+          disabled={isListening}
           className={`p-2 rounded ${
-            isListening ? "bg-red-500" : "bg-blue-500"
+            isListening ? "bg-gray-400" : "bg-blue-500"
           } text-white`}
         >
           <FaMicrophone />
