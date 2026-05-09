@@ -40,13 +40,17 @@ app.use("/api/v1/message", messageRoute);
 setInterval(async () => {
   try {
     const now = new Date();
+    console.log("Checking scheduled messages at:", now);
 
     const messages = await Message.find({
       isScheduled: true,
       scheduledTime: { $lte: now },
     });
 
+    console.log(" Found messages:", messages.length);
+
     for (let msg of messages) {
+      console.log("Sending scheduled:", msg.message);
       msg.isScheduled = false;
       await msg.save();
 
@@ -62,6 +66,7 @@ setInterval(async () => {
       if (receiverSocketId) {
         msg.delivered = true;
         await msg.save();
+        io.to(receiverSocketId).emit("newMessage", msg);
       }
 
       // realtime send

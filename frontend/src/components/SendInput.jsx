@@ -15,6 +15,11 @@ const SendInput = () => {
 
   const typingTimeout = useRef(null); // important
 
+  const localToUTC = (dateTime) => {
+    const local = new Date(dateTime);
+    return new Date(local.getTime() - local.getTimezoneOffset() * 60000);
+  };
+
   const handleTyping = (value) => {
     setMessage(value);
 
@@ -45,10 +50,21 @@ const SendInput = () => {
     e.preventDefault();
     if (!message.trim()) return;
 
+    if (scheduleTime && new Date(scheduleTime) < new Date()) {
+      alert("Please select future time");
+      return;
+    }
+
     try {
       const res = await axios.post(
         `${BASE_URL}/api/v1/message/send/${selectedUser?._id}`,
-        { message,scheduledTime: scheduleTime || null, },
+        {
+          message,
+          scheduledTime: scheduleTime
+            ? localToUTC(scheduleTime)
+            : null,
+        },
+
         { withCredentials: true },
       );
 
@@ -73,13 +89,13 @@ const SendInput = () => {
 
   return (
     <form onSubmit={onSubmitHandler} className="p-4">
-       <input
+      <input
         type="datetime-local"
         value={scheduleTime}
         onChange={(e) => setScheduleTime(e.target.value)}
         className="border p-2 rounded w-full text-black"
       />
-      
+
       <div
         className="flex items-center gap-2 
         bg-white/30 backdrop-blur-md border border-white/20 
