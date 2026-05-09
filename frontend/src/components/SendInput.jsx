@@ -55,23 +55,24 @@ const SendInput = () => {
     };
 
     recognition.onerror = (err) => {
-      console.log("🎤 ERROR TYPE:", event.error);
+      console.log("🎤 ERROR TYPE:", err.error);
 
-      if (event.error === "not-allowed") {
+      if (err.error === "not-allowed") {
         alert("Microphone permission denied ❌");
       }
 
-      if (event.error === "no-speech") {
+      if (err.error === "no-speech") {
         alert("No speech detected 😐");
       }
 
-      if (event.error === "audio-capture") {
+      if (err.error === "audio-capture") {
         alert("Mic not found 🎤❌");
       }
 
-      if (event.error === "network") {
+      if (err.error === "network") {
         alert("Internet issue 🌐");
       }
+
       setIsListening(false);
     };
   };
