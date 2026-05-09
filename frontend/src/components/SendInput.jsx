@@ -52,9 +52,9 @@ const SendInput = () => {
         { withCredentials: true },
       );
 
-      if (!scheduleTime) {
-        dispatch(addMessage(res.data));
-      }
+      // if (!scheduleTime) {
+      //   dispatch(addMessage(res.data));
+      // }
       //  stop typing on send
       const socket = getSocket();
 
@@ -68,7 +68,7 @@ const SendInput = () => {
     }
 
     setMessage("");
-     setScheduleTime("");
+    setScheduleTime("");
   };
 
   return (

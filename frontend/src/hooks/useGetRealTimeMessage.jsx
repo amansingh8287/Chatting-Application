@@ -14,29 +14,38 @@ const useGetRealTimeMessage = () => {
   const { selectedUser } = useSelector((store) => store.user);
 
   useEffect(() => {
-  const socket = getSocket();
-  if (!socket) return;
+    const socket = getSocket();
+    if (!socket) return;
 
-  const handleTyping = ({ senderId }) => {
-    console.log("🔥 typing received:", senderId);
+    const handleTyping = ({ senderId }) => {
+      console.log("🔥 typing received:", senderId);
 
-    if (senderId?.toString() === selectedUser?._id?.toString()) {
-      setIsTyping(true);
-    }
-  };
+      if (senderId?.toString() === selectedUser?._id?.toString()) {
+        setIsTyping(true);
+      }
+    };
 
-  const handleStopTyping = ({ senderId }) => {
-    if (senderId?.toString() === selectedUser?._id?.toString()) {
-      setIsTyping(false);
-    }
-  };
+    const handleStopTyping = ({ senderId }) => {
+      if (senderId?.toString() === selectedUser?._id?.toString()) {
+        setIsTyping(false);
+      }
+    };
 
-  socket.on("typing", handleTyping);
-  socket.on("stopTyping", handleStopTyping);
+    socket.on("typing", handleTyping);
+    socket.on("stopTyping", handleStopTyping);
 
     //  NEW MESSAGE
     const handleNewMessage = async (newMessage) => {
-      dispatch(addMessage(newMessage));
+      // dispatch(addMessage(newMessage));
+      dispatch(
+        setMessages((prev) => {
+          const exists = prev.find((msg) => msg._id === newMessage._id);
+
+          if (exists) return prev; //  duplicate avoid
+
+          return [...prev, newMessage];
+        }),
+      );
 
       // 🔥 mark seen instantly when message arrives
       if (newMessage.senderId === selectedUser?._id) {
