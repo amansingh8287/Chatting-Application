@@ -65,9 +65,11 @@ setInterval(async () => {
       // delivered
       if (receiverSocketId) {
         msg.delivered = true;
-        await msg.save();
-        io.to(receiverSocketId).emit("newMessage", msg);
+        // await msg.save();
+        // io.to(receiverSocketId).emit("newMessage", msg);
       }
+
+      await msg.save();
 
       // realtime send
       if (receiverSocketId) {

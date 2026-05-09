@@ -2,12 +2,18 @@ import React, { useState } from "react";
 import axios from "axios";
 import { BASE_URL } from "..";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const ForgotPassword = () => {
   const [username, setUsername] = useState("");
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!username.trim()) {
+      return toast.error("Please enter username");
+    }
 
     try {
       const res = await axios.post(
@@ -16,6 +22,11 @@ const ForgotPassword = () => {
       );
 
       toast.success(res.data.message);
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+
     } catch (error) {
       toast.error(error.response?.data?.message);
     }
@@ -40,6 +51,13 @@ const ForgotPassword = () => {
         <button className="w-full bg-blue-500 text-white p-2 rounded">
           Send Reset Link
         </button>
+
+         <p
+          onClick={() => navigate("/login")}
+          className="text-center text-blue-500 mt-3 cursor-pointer hover:underline"
+        >
+          Back to Login
+        </p>
       </form>
     </div>
   );
