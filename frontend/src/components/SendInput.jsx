@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { IoSend } from "react-icons/io5";
 import { FaMicrophone } from "react-icons/fa";
 import axios from "axios";
@@ -17,17 +17,25 @@ const SendInput = () => {
 
   const typingTimeout = useRef(null); // important
 
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognitionRef = useRef(null);
 
-  const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  if (recognition) {
-    recognition.continuous = false;
-    recognition.lang = "en-US"; //  Hindi ke liye: "hi-IN"
-  }
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+
+      recognition.continuous = true;
+      recognition.interimResults = true; //  important
+      recognition.lang = "en-US";
+
+      recognitionRef.current = recognition;
+    }
+  }, []);
 
   const startListening = () => {
+    const recognition = recognitionRef.current;
     if (!recognition) {
       alert("Speech Recognition not supported in this browser");
       return;
@@ -37,17 +45,15 @@ const SendInput = () => {
     recognition.start();
 
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
+      let transcript = "";
 
-      setMessage((prev) => prev + " " + transcript);
-
-      //  typing emit
-      const socket = getSocket();
-      if (socket && selectedUser?._id) {
-        socket.emit("typing", {
-          receiverId: selectedUser._id,
-        });
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
       }
+
+      console.log("🎤 Voice:", transcript);
+
+      setMessage(transcript);
     };
 
     recognition.onend = () => {
@@ -57,20 +63,9 @@ const SendInput = () => {
     recognition.onerror = (err) => {
       console.log("🎤 ERROR TYPE:", err.error);
 
-      if (err.error === "not-allowed") {
-        alert("Microphone permission denied ❌");
-      }
-
       if (err.error === "no-speech") {
-        alert("No speech detected 😐");
-      }
-
-      if (err.error === "audio-capture") {
-        alert("Mic not found 🎤❌");
-      }
-
-      if (err.error === "network") {
-        alert("Internet issue 🌐");
+        console.log("🔁 retry...");
+        recognition.start(); //  auto restart
       }
 
       setIsListening(false);
