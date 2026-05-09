@@ -5,6 +5,7 @@ import { BASE_URL } from "..";
 import { setMessages } from "../redux/messageSlice";
 
 const Message = ({ message }) => {
+  console.log("MESSAGE DATA:", message);
   const scroll = useRef();
   const dispatch = useDispatch();
 
@@ -49,13 +50,11 @@ const Message = ({ message }) => {
     }
   };
 
-  const displayTime = message?.scheduledTime
-    ? message.scheduledTime
-    : message?.createdAt;
+ const displayTime = message?.scheduledTime || message?.createdAt;
 
   return (
     <div
-      ref={scroll}
+      ref={scroll} 
       className={`flex ${isMe ? "justify-end" : "justify-start"} my-2`}
     >
       <div

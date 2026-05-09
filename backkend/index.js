@@ -60,8 +60,6 @@ setInterval(async () => {
 
         msg.isScheduled = false;
 
-        msg.createdAt = msg.scheduledTime;
-
         const receiverSocketId = getReceiverSocketId(msg.receiverId.toString());
         const senderSocketId = getReceiverSocketId(msg.senderId.toString());
 

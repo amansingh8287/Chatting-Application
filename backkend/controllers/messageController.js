@@ -22,9 +22,7 @@ export const sendMessage = async (req, res) => {
     }
 
     //  check if scheduled
-    const isScheduled =
-      scheduledTime && new Date(scheduledTime) > new Date();
-
+    const isScheduled = scheduledTime && new Date(scheduledTime) > new Date();
 
     const newMessage = await Message.create({
       senderId,
@@ -41,10 +39,7 @@ export const sendMessage = async (req, res) => {
 
     // agar scheduled hai → abhi send nahi karna
     if (isScheduled) {
-      return res.status(201).json({
-        message: "Message scheduled successfully",
-        data: newMessage,
-      });
+      return res.status(201).json(newMessage);
     }
 
     const receiverSocketId = getReceiverSocketId(receiverId.toString());
@@ -115,9 +110,7 @@ export const markSeen = async (req, res) => {
       seen: false,
     }).select("_id");
 
-    const messageIds = unseenMessages.map((msg) =>
-      msg._id.toString()
-    );
+    const messageIds = unseenMessages.map((msg) => msg._id.toString());
 
     // 🚫 nothing to update
     if (messageIds.length === 0) {
@@ -127,7 +120,7 @@ export const markSeen = async (req, res) => {
     // 🔥 STEP 2: update only those
     await Message.updateMany(
       { _id: { $in: messageIds } },
-      { $set: { seen: true } }
+      { $set: { seen: true } },
     );
 
     // 🔥 STEP 3: emit realtime
@@ -140,7 +133,6 @@ export const markSeen = async (req, res) => {
     }
 
     res.status(200).json({ success: true });
-
   } catch (error) {
     console.log(error);
   }
