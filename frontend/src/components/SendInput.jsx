@@ -63,6 +63,25 @@ const SendInput = () => {
 
       recognition.onerror = (err) => {
         console.log("🎤 ERROR:", err.error);
+
+        if (err.error === "network") {
+          console.log("🌐 Network issue — stopping mic");
+
+          setIsListening(false);
+          isListeningRef.current = false;
+
+          //  DO NOT restart
+          return;
+        }
+
+        if (err.error === "not-allowed") {
+          alert("Mic permission denied ❌");
+        }
+
+        if (err.error === "no-speech") {
+          console.log("No speech detected");
+        }
+
         setIsListening(false);
         isListeningRef.current = false;
       };
