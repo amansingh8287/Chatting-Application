@@ -82,7 +82,7 @@ const Message = ({ message }) => {
           <span
             className={`text-xs ${isMe ? "text-gray-200" : "text-gray-600"}`}
           >
-            {formatTime(message?.createdAt)}
+            {formatTime(displayTime)}
           </span>
 
           {/* ✔✔ SEEN */}
@@ -95,6 +95,11 @@ const Message = ({ message }) => {
               <span className="text-gray-400">✔</span>
             ))}
         </div>
+         {message?.isScheduled && (
+          <span className="text-xs text-yellow-400">
+            Scheduled
+          </span>
+        )}
       </div>
     </div>
   );
