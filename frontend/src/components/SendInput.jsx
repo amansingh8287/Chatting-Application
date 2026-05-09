@@ -51,27 +51,26 @@ const SendInput = () => {
     }
 
     try {
-      let utcDate = null;
+      // let utcDate = null;
 
-      if (scheduleTime) {
-        const localDate = new Date(scheduleTime);
-        utcDate = new Date(
-          localDate.getTime() - localDate.getTimezoneOffset() * 60000,
-        );
-      }
+      // if (scheduleTime) {
+      //   const localDate = new Date(scheduleTime);
+      //   utcDate = new Date(
+      //     localDate.getTime() - localDate.getTimezoneOffset() * 60000,
+      //   );
+      // }
       const res = await axios.post(
         `${BASE_URL}/api/v1/message/send/${selectedUser?._id}`,
         {
           message,
-          scheduledTime: utcDate,
+          scheduledTime: scheduleTime ? new Date(scheduleTime) : null,
         },
 
         { withCredentials: true },
       );
 
-      
       dispatch(addMessage(res.data));
-      
+
       //  stop typing on send
       const socket = getSocket();
 

@@ -48,7 +48,7 @@ setInterval(async () => {
       isScheduled: true
     });
 
-    console.log("📦 ALL SCHEDULED:", messages.length);
+    console.log(" ALL SCHEDULED:", messages.length);
 
     for (let msg of messages) {
       console.log(" Checking:", msg.scheduledTime);
@@ -68,6 +68,8 @@ setInterval(async () => {
         }
 
         await msg.save();
+
+        const updatedMsg = await Message.findById(msg._id);
 
         if (receiverSocketId) {
           io.to(receiverSocketId).emit("newMessage", msg);
