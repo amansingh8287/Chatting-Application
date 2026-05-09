@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { IoSend } from "react-icons/io5";
+import { FaMicrophone } from "react-icons/fa";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { addMessage } from "../redux/messageSlice";
@@ -9,11 +10,55 @@ import { getSocket } from "../socket";
 const SendInput = () => {
   const [message, setMessage] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
+  const [isListening, setIsListening] = useState(false);
   const dispatch = useDispatch();
   const { selectedUser } = useSelector((store) => store.user);
   const { authUser } = useSelector((store) => store.user);
 
   const typingTimeout = useRef(null); // important
+
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+  if (recognition) {
+    recognition.continuous = false;
+    recognition.lang = "en-US"; //  Hindi ke liye: "hi-IN"
+  }
+
+  const startListening = () => {
+    if (!recognition) {
+      alert("Speech Recognition not supported in this browser");
+      return;
+    }
+
+    setIsListening(true);
+    recognition.start();
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+
+      setMessage((prev) => prev + " " + transcript);
+
+      //  typing emit
+      const socket = getSocket();
+      if (socket && selectedUser?._id) {
+        socket.emit("typing", {
+          receiverId: selectedUser._id,
+        });
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onerror = (err) => {
+      console.log("Speech error:", err);
+      setIsListening(false);
+    };
+  };
 
   const handleTyping = (value) => {
     setMessage(value);
@@ -51,14 +96,6 @@ const SendInput = () => {
     }
 
     try {
-      // let utcDate = null;
-
-      // if (scheduleTime) {
-      //   const localDate = new Date(scheduleTime);
-      //   utcDate = new Date(
-      //     localDate.getTime() - localDate.getTimezoneOffset() * 60000,
-      //   );
-      // }
       const res = await axios.post(
         `${BASE_URL}/api/v1/message/send/${selectedUser?._id}`,
         {
@@ -101,6 +138,16 @@ const SendInput = () => {
         bg-white/30 backdrop-blur-md border border-white/20 
         rounded-xl px-3 py-2 shadow-lg"
       >
+        <button
+          type="button"
+          onClick={startListening}
+          className={`p-2 rounded ${
+            isListening ? "bg-red-500" : "bg-blue-500"
+          } text-white`}
+        >
+          <FaMicrophone />
+        </button>
+
         <input
           value={message}
           onChange={(e) => handleTyping(e.target.value)}
@@ -113,6 +160,11 @@ const SendInput = () => {
           <IoSend />
         </button>
       </div>
+       {isListening && (
+        <p className="text-red-500 text-sm">
+          🎤 Listening...
+        </p>
+      )}
     </form>
   );
 };

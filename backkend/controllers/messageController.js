@@ -22,7 +22,8 @@ export const sendMessage = async (req, res) => {
     }
 
     //  check if scheduled
-    const isScheduled = scheduledTime && new Date(scheduledTime) > new Date();
+  const isScheduled =
+  scheduledTime && new Date(scheduledTime).getTime() > Date.now();
 
     const newMessage = await Message.create({
       senderId,
