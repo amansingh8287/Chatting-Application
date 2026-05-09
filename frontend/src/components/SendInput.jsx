@@ -15,7 +15,8 @@ const SendInput = () => {
   const { selectedUser } = useSelector((store) => store.user);
   const { authUser } = useSelector((store) => store.user);
 
-  const typingTimeout = useRef(null); // important
+  const typingTimeout = useRef(null);
+  const silenceTimeoutRef = useRef(null);
 
   const recognitionRef = useRef(null);
   const isListeningRef = useRef(false);
