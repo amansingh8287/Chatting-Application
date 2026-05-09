@@ -17,15 +17,15 @@ const server = http.createServer(app);
 
 const PORT = process.env.PORT || 5000;
 
-// 🔥 socket init
+//  socket init
 initSocket(server);
 
-// 🔥 middleware
+//  middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// 🔥 CORS FIX
+//  CORS FIX
 app.use(cors({
   origin: "https://chatting-application-4yur.vercel.app",
   credentials: true
@@ -41,56 +41,56 @@ setInterval(async () => {
   try {
     const now = new Date();
 
-    console.log("Checking at:", now);
+    console.log(" NOW:", now.toISOString());
 
+    //  sirf pending messages lao
     const messages = await Message.find({
-      isScheduled: true,
-      scheduledTime: { $lte: new Date(now.getTime() + 5000) }, // 🔥 buffer fix
+      isScheduled: true
     });
 
-    console.log("📦 Found:", messages.length);
+    console.log("📦 ALL SCHEDULED:", messages.length);
 
     for (let msg of messages) {
-      console.log("🚀 Sending:", msg.message);
+      console.log(" Checking:", msg.scheduledTime);
 
-      // update status
-      msg.isScheduled = false;
+      //  IMPORTANT: direct JS compare (DB query nahi)
+      if (new Date(msg.scheduledTime) <= now) {
 
-      const receiverSocketId = getReceiverSocketId(msg.receiverId.toString());
-      const senderSocketId = getReceiverSocketId(msg.senderId.toString());
+        console.log("SENDING:", msg.message);
 
-      // delivered
-      if (receiverSocketId) {
-        msg.delivered = true;
-      }
+        msg.isScheduled = false;
 
-      // 🔥 SAVE ONCE ONLY
-      await msg.save();
+        const receiverSocketId = getReceiverSocketId(msg.receiverId.toString());
+        const senderSocketId = getReceiverSocketId(msg.senderId.toString());
 
-      // send to receiver
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit("newMessage", msg);
-      }
+        if (receiverSocketId) {
+          msg.delivered = true;
+        }
 
-      // send to sender
-      if (senderSocketId) {
-        io.to(senderSocketId).emit("newMessage", msg);
-      }
+        await msg.save();
 
-      // delivered tick
-      if (receiverSocketId && senderSocketId) {
-        io.to(senderSocketId).emit("messageDelivered", {
-          messageId: msg._id,
-        });
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit("newMessage", msg);
+        }
+
+        if (senderSocketId) {
+          io.to(senderSocketId).emit("newMessage", msg);
+        }
+
+        if (receiverSocketId && senderSocketId) {
+          io.to(senderSocketId).emit("messageDelivered", {
+            messageId: msg._id,
+          });
+        }
       }
     }
 
   } catch (err) {
-    console.log("❌ Scheduler error:", err);
+    console.log(" Scheduler error:", err);
   }
 }, 5000);
 
-// 🔥 start server properly
+//  start server properly
 const startServer = async () => {
   try {
     await connectDB();
