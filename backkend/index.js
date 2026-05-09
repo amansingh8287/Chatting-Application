@@ -40,42 +40,39 @@ app.use("/api/v1/message", messageRoute);
 setInterval(async () => {
   try {
     const now = new Date();
-    console.log("Checking scheduled messages at:", now);
+
+    console.log("Checking at:", now);
 
     const messages = await Message.find({
       isScheduled: true,
-      scheduledTime: { $lte: now },
+      scheduledTime: { $lte: new Date(now.getTime() + 5000) }, // 🔥 buffer fix
     });
 
-    console.log(" Found messages:", messages.length);
+    console.log("📦 Found:", messages.length);
 
     for (let msg of messages) {
-      console.log("Sending scheduled:", msg.message);
+      console.log("🚀 Sending:", msg.message);
+
+      // update status
       msg.isScheduled = false;
-      await msg.save();
 
-      const receiverSocketId = getReceiverSocketId(
-        msg.receiverId.toString()
-      );
-
-      const senderSocketId = getReceiverSocketId(
-        msg.senderId.toString()
-      );
+      const receiverSocketId = getReceiverSocketId(msg.receiverId.toString());
+      const senderSocketId = getReceiverSocketId(msg.senderId.toString());
 
       // delivered
       if (receiverSocketId) {
         msg.delivered = true;
-        // await msg.save();
-        // io.to(receiverSocketId).emit("newMessage", msg);
       }
 
+      // 🔥 SAVE ONCE ONLY
       await msg.save();
 
-      // realtime send
+      // send to receiver
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("newMessage", msg);
       }
 
+      // send to sender
       if (senderSocketId) {
         io.to(senderSocketId).emit("newMessage", msg);
       }
@@ -89,7 +86,7 @@ setInterval(async () => {
     }
 
   } catch (err) {
-    console.log("Scheduler error:", err);
+    console.log("❌ Scheduler error:", err);
   }
 }, 5000);
 

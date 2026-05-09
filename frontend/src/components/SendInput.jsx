@@ -61,7 +61,7 @@ const SendInput = () => {
         {
           message,
           scheduledTime: scheduleTime
-            ? localToUTC(scheduleTime)
+            ? new Date(scheduleTime)
             : null,
         },
 
