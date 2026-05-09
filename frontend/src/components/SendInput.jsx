@@ -55,7 +55,23 @@ const SendInput = () => {
     };
 
     recognition.onerror = (err) => {
-      console.log("Speech error:", err);
+      console.log("🎤 ERROR TYPE:", event.error);
+
+      if (event.error === "not-allowed") {
+        alert("Microphone permission denied ❌");
+      }
+
+      if (event.error === "no-speech") {
+        alert("No speech detected 😐");
+      }
+
+      if (event.error === "audio-capture") {
+        alert("Mic not found 🎤❌");
+      }
+
+      if (event.error === "network") {
+        alert("Internet issue 🌐");
+      }
       setIsListening(false);
     };
   };
@@ -160,11 +176,7 @@ const SendInput = () => {
           <IoSend />
         </button>
       </div>
-       {isListening && (
-        <p className="text-red-500 text-sm">
-          🎤 Listening...
-        </p>
-      )}
+      {isListening && <p className="text-red-500 text-sm">🎤 Listening...</p>}
     </form>
   );
 };
