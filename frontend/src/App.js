@@ -6,10 +6,11 @@ import Login from "./components/Login";
 import { useEffect } from "react";
 import { connectSocket, getSocket } from "./socket";
 import { useSelector, useDispatch } from "react-redux";
-import { setOnlineUsers } from "./redux/userSlice";
+import { setOnlineUsers, setIncomingCall, endCall } from "./redux/userSlice";
 import UserProfileModal from "./components/UserProfileModal";
 import ForgotPassword from "./components/ForgotPassword";
 import IncomingCallPopup from "./components/IncomingCallPopup"; 
+import VideoCall from "./components/VideoCall";
 
 const router = createBrowserRouter([
   { path: "/", element: <HomePage /> },
