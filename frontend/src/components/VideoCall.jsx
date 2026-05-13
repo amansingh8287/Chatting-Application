@@ -7,7 +7,7 @@ import { IoCall } from "react-icons/io5";
 
 const VideoCall = () => {
   const { selectedUser, incomingCall, callAccepted, authUser } = useSelector(
-    (s) => s.user
+    (s) => s.user,
   );
   const dispatch = useDispatch();
 
@@ -37,11 +37,24 @@ const VideoCall = () => {
         trickle: false,
         stream,
         config: {
-          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            {
+              urls: "turn:openrelay.metered.ca:80",
+              username: "openrelayproject",
+              credential: "openrelayproject",
+            },
+            {
+              urls: "turn:openrelay.metered.ca:443",
+              username: "openrelayproject",
+              credential: "openrelayproject",
+            },
+          ],
         },
       });
 
       peer.on("signal", (data) => {
+        console.log("🎥 MY STREAM:", stream);
         socket.emit("callUser", {
           userToCall: selectedUser._id,
           signalData: data,
@@ -68,7 +81,19 @@ const VideoCall = () => {
         trickle: false,
         stream,
         config: {
-          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            {
+              urls: "turn:openrelay.metered.ca:80",
+              username: "openrelayproject",
+              credential: "openrelayproject",
+            },
+            {
+              urls: "turn:openrelay.metered.ca:443",
+              username: "openrelayproject",
+              credential: "openrelayproject",
+            },
+          ],
         },
       });
 
@@ -117,7 +142,6 @@ const VideoCall = () => {
 
   return (
     <div className="relative h-full w-full bg-black flex items-center justify-center">
-
       <video
         ref={userVideo}
         autoPlay
