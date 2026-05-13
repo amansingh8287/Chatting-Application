@@ -7,7 +7,7 @@ import { IoCall } from "react-icons/io5";
 
 const VideoCall = () => {
   const { selectedUser, incomingCall, callAccepted, authUser } = useSelector(
-    (s) => s.user,
+    (s) => s.user
   );
   const dispatch = useDispatch();
 
@@ -16,23 +16,52 @@ const VideoCall = () => {
   const connectionRef = useRef();
 
   const [stream, setStream] = useState(null);
-
   const socket = getSocket();
 
-  // 🎥 CAMERA ACCESS
+  // 🎥 camera
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((currentStream) => {
         setStream(currentStream);
-
         if (myVideo.current) {
           myVideo.current.srcObject = currentStream;
         }
       });
   }, []);
 
-  //  RECEIVER SIDE (ANSWER CALL)
+  // 📞 CALLER SIDE
+  useEffect(() => {
+    if (!incomingCall && selectedUser && stream) {
+      const peer = new Peer({
+        initiator: true,
+        trickle: false,
+        stream,
+        config: {
+          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+        },
+      });
+
+      peer.on("signal", (data) => {
+        socket.emit("callUser", {
+          userToCall: selectedUser._id,
+          signalData: data,
+          from: authUser._id,
+        });
+      });
+
+      peer.on("stream", (remoteStream) => {
+        console.log("🔥 CALLER GOT STREAM");
+        if (userVideo.current) {
+          userVideo.current.srcObject = remoteStream;
+        }
+      });
+
+      connectionRef.current = peer;
+    }
+  }, [stream]);
+
+  // 📲 RECEIVER SIDE
   useEffect(() => {
     if (callAccepted && incomingCall && stream) {
       const peer = new Peer({
@@ -52,41 +81,32 @@ const VideoCall = () => {
       });
 
       peer.on("stream", (remoteStream) => {
+        console.log("🔥 RECEIVER GOT STREAM");
         if (userVideo.current) {
           userVideo.current.srcObject = remoteStream;
         }
       });
 
-      if (incomingCall?.signal) {
-        peer.signal(incomingCall.signal);
-      }
+      peer.signal(incomingCall.signal);
 
       connectionRef.current = peer;
     }
   }, [callAccepted, stream]);
 
-  // CALLER SIDE (LISTEN FOR ACCEPT)
+  // 🔁 CALL ACCEPTED
   useEffect(() => {
-    const handleCallAccepted = (signal) => {
-      if (window.peer && signal) {
-        window.peer.signal(signal);
+    socket.on("callAccepted", (signal) => {
+      if (connectionRef.current) {
+        connectionRef.current.signal(signal);
       }
-
       dispatch(acceptCall());
-    };
+    });
 
-    socket.on("callAccepted", handleCallAccepted);
-
-    return () => socket.off("callAccepted", handleCallAccepted);
+    return () => socket.off("callAccepted");
   }, []);
 
-  //  END CALL
   const leaveCall = () => {
-    if (connectionRef.current) {
-      connectionRef.current.destroy();
-      connectionRef.current = null;
-    }
-
+    connectionRef.current?.destroy();
     dispatch(endCall());
 
     socket.emit("endCall", {
@@ -94,33 +114,28 @@ const VideoCall = () => {
     });
   };
 
-  //  DON'T SHOW IF NO CALL
-  if (!callAccepted) return null;
+  if (!callAccepted && !incomingCall) return null;
 
   return (
     <div className="relative h-full w-full bg-black flex items-center justify-center">
-      {/* 🎥 REMOTE VIDEO */}
+
       <video
-        id="userVideo"
         ref={userVideo}
         autoPlay
         playsInline
         className="w-full h-full object-cover"
       />
 
-      {/*  MY VIDEO */}
       <video
-        id="myVideo"
         ref={myVideo}
         autoPlay
         muted
-        className="w-32 h-40 object-cover absolute top-4 right-4 rounded-lg border-2 border-white"
+        className="w-32 h-40 absolute top-4 right-4 rounded-lg border-2 border-white"
       />
 
-      {/* END CALL BUTTON */}
       <button
         onClick={leaveCall}
-        className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-red-500 hover:bg-red-600 text-white p-4 rounded-full shadow-lg"
+        className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-red-500 p-4 rounded-full"
       >
         <IoCall size={24} style={{ transform: "rotate(135deg)" }} />
       </button>
