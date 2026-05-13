@@ -18,7 +18,6 @@ const VideoCall = () => {
   const [stream, setStream] = useState(null);
   const socket = getSocket();
 
-  // 🎥 camera
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
@@ -30,7 +29,7 @@ const VideoCall = () => {
       });
   }, []);
 
-  // 📞 CALLER SIDE
+  //  CALLER SIDE
   useEffect(() => {
     if (!incomingCall && selectedUser && stream) {
       const peer = new Peer({
@@ -51,7 +50,7 @@ const VideoCall = () => {
       });
 
       peer.on("stream", (remoteStream) => {
-        console.log("🔥 CALLER GOT STREAM");
+        console.log(" CALLER GOT STREAM");
         if (userVideo.current) {
           userVideo.current.srcObject = remoteStream;
         }
@@ -61,7 +60,7 @@ const VideoCall = () => {
     }
   }, [stream]);
 
-  // 📲 RECEIVER SIDE
+  //  RECEIVER SIDE
   useEffect(() => {
     if (callAccepted && incomingCall && stream) {
       const peer = new Peer({
@@ -81,7 +80,7 @@ const VideoCall = () => {
       });
 
       peer.on("stream", (remoteStream) => {
-        console.log("🔥 RECEIVER GOT STREAM");
+        console.log(" RECEIVER GOT STREAM");
         if (userVideo.current) {
           userVideo.current.srcObject = remoteStream;
         }
@@ -93,7 +92,7 @@ const VideoCall = () => {
     }
   }, [callAccepted, stream]);
 
-  // 🔁 CALL ACCEPTED
+  //  CALL ACCEPTED
   useEffect(() => {
     socket.on("callAccepted", (signal) => {
       if (connectionRef.current) {
