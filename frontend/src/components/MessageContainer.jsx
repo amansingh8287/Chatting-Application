@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import SendInput from "./SendInput";
 import Messages from "./Messages";
@@ -7,9 +6,12 @@ import { setSelectedUser } from "../redux/userSlice";
 import { getSocket } from "../socket";
 import chatBg from "../assets/chat-bg.jpg";
 import useGetRealTimeMessage from "../hooks/useGetRealTimeMessage";
+import VideoCall from "./VideoCall";
+import { IoCall } from "react-icons/io5";
+import { useSelector } from "react-redux";
 
 const MessageContainer = () => {
-  const { selectedUser, authUser, onlineUsers } = useSelector(
+  const { selectedUser, authUser, onlineUsers, callAccepted } = useSelector(
     (store) => store.user,
   );
 
@@ -45,32 +47,57 @@ const MessageContainer = () => {
           {/* 🔥 content */}
           <div className="relative z-10 flex flex-col h-full">
             {/* HEADER */}
-            <div className="flex gap-2 items-center px-4 py-2 bg-white/20 backdrop-blur-md border-b border-white/20 text-black">
-              <img
-                src={selectedUser?.profilePhoto}
-                className="w-10 h-10 rounded-full"
-              />
+            <div className="flex justify-between items-center px-4 py-2 bg-white/20 backdrop-blur-md border-b border-white/20 text-black">
+              {/* LEFT SIDE */}
+              <div className="flex gap-2 items-center">
+                <img
+                  src={selectedUser?.profilePhoto}
+                  className="w-10 h-10 rounded-full"
+                />
 
-              <div className="flex flex-col">
-                <p className="font-semibold">{selectedUser?.fullName}</p>
+                <div className="flex flex-col">
+                  <p className="font-semibold">{selectedUser?.fullName}</p>
 
-                <span className="text-xs text-green-600">
-                  {isOnline ? "Online" : "Offline"}
-                </span>
+                  <span className="text-xs text-green-600">
+                    {isOnline ? "Online" : "Offline"}
+                  </span>
+                </div>
               </div>
+
+              {/* RIGHT SIDE CALL BUTTON */}
+              <button
+                onClick={() => {
+                  const socket = getSocket();
+
+                  socket.emit("callUser", {
+                    userToCall: selectedUser._id,
+                    from: authUser._id,
+                  });
+                }}
+                className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow-lg transition"
+              >
+                <IoCall size={20} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {callAccepted ? (
+                // 🎥 VIDEO CALL UI
+                <VideoCall />
+              ) : (
+                <>
+                  {/* TYPING */}
+                  {isTyping && (
+                    <p className="text-sm text-gray-200 px-4 py-1">Typing...</p>
+                  )}
+
+                  {/* MESSAGES */}
+                  <Messages />
+                </>
+              )}
             </div>
 
-            {/* 🔥 TYPING INDICATOR */}
-            {isTyping && (
-              <p className="text-sm text-gray-200">
-                 Typing...
-              </p>
-            )}
-            {/* MESSAGES */}
-            <Messages />
-
-            {/* INPUT */}
-            <SendInput />
+            {/* INPUT (only when not in call) */}
+            {!callAccepted && <SendInput />}
           </div>
         </div>
       ) : (
