@@ -7,7 +7,7 @@ import { IoCall } from "react-icons/io5";
 
 const VideoCall = () => {
   const { selectedUser, incomingCall, callAccepted, authUser } = useSelector(
-    (s) => s.user
+    (s) => s.user,
   );
   const dispatch = useDispatch();
 
@@ -68,11 +68,11 @@ const VideoCall = () => {
   // CALLER SIDE (LISTEN FOR ACCEPT)
   useEffect(() => {
     const handleCallAccepted = (signal) => {
-      if (connectionRef.current && signal) {
-        connectionRef.current.signal(signal);
+      if (window.peer && signal) {
+        window.peer.signal(signal);
       }
 
-      dispatch(acceptCall()); // caller ko bhi UI show
+      dispatch(acceptCall());
     };
 
     socket.on("callAccepted", handleCallAccepted);
@@ -99,9 +99,9 @@ const VideoCall = () => {
 
   return (
     <div className="relative h-full w-full bg-black flex items-center justify-center">
-
       {/* 🎥 REMOTE VIDEO */}
       <video
+        id="userVideo"
         ref={userVideo}
         autoPlay
         playsInline
@@ -110,6 +110,7 @@ const VideoCall = () => {
 
       {/*  MY VIDEO */}
       <video
+        id="myVideo"
         ref={myVideo}
         autoPlay
         muted

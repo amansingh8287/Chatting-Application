@@ -20,7 +20,7 @@ const MessageContainer = () => {
 
   const socket = getSocket();
 
-  // 🔥 TYPING LISTENER
+  // TYPING LISTENER
   useEffect(() => {
     socket?.on("typing", () => {
       setTimeout(() => {}, 1500);
@@ -28,6 +28,46 @@ const MessageContainer = () => {
 
     return () => socket?.off("typing");
   }, []);
+
+  const handleCall = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+
+      const peer = new Peer({
+        initiator: true,
+        trickle: false,
+        stream,
+        config: {
+          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+        },
+      });
+
+      peer.on("signal", (data) => {
+        socket.emit("callUser", {
+          userToCall: selectedUser._id,
+          signalData: data,
+          from: authUser._id,
+        });
+      });
+
+      peer.on("stream", (remoteStream) => {
+        console.log(" CALLER GOT REMOTE STREAM");
+
+        const video = document.getElementById("userVideo");
+        if (video) video.srcObject = remoteStream;
+      });
+
+      // SAVE PEER GLOBAL
+      window.peer = peer;
+      window.localStream = stream;
+
+    } catch (err) {
+      console.log("Call error:", err);
+    }
+  };
 
   return (
     <>
@@ -64,38 +104,31 @@ const MessageContainer = () => {
               </div>
 
               {/* RIGHT SIDE CALL BUTTON */}
-              <button
-                onClick={() => {
-                  const socket = getSocket();
-
-                  socket.emit("callUser", {
-                    userToCall: selectedUser._id,
-                    from: authUser._id,
-                  });
-                }}
-                className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow-lg transition"
+               <button
+                onClick={handleCall}
+                className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow-lg"
               >
                 <IoCall size={20} />
               </button>
             </div>
+
+            {/* MAIN AREA */}
             <div className="flex-1 overflow-y-auto">
               {callAccepted ? (
-                // 🎥 VIDEO CALL UI
                 <VideoCall />
               ) : (
                 <>
-                  {/* TYPING */}
                   {isTyping && (
-                    <p className="text-sm text-gray-200 px-4 py-1">Typing...</p>
+                    <p className="text-sm text-gray-200 px-4 py-1">
+                      Typing...
+                    </p>
                   )}
 
-                  {/* MESSAGES */}
                   <Messages />
                 </>
               )}
             </div>
 
-            {/* INPUT (only when not in call) */}
             {!callAccepted && <SendInput />}
           </div>
         </div>
