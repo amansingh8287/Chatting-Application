@@ -2,11 +2,13 @@ import React, { useRef, useEffect, useState } from "react";
 import Peer from "simple-peer";
 import { useSelector, useDispatch } from "react-redux";
 import { getSocket } from "../socket";
-import { endCall } from "../redux/userSlice";
+import { endCall, acceptCall } from "../redux/userSlice";
 import { IoCall } from "react-icons/io5";
 
 const VideoCall = () => {
-  const { selectedUser, incomingCall, callAccepted, authUser } = useSelector((s) => s.user);
+  const { selectedUser, incomingCall, callAccepted, authUser } = useSelector(
+    (s) => s.user
+  );
   const dispatch = useDispatch();
 
   const myVideo = useRef();
@@ -15,52 +17,22 @@ const VideoCall = () => {
 
   const [stream, setStream] = useState(null);
 
-  const socket = getSocket(); //  FIX: missing tha
+  const socket = getSocket();
 
-  //  get camera
+  // 🎥 CAMERA ACCESS
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((currentStream) => {
         setStream(currentStream);
+
         if (myVideo.current) {
           myVideo.current.srcObject = currentStream;
         }
       });
   }, []);
 
-  //  CALL (initiator)
-  useEffect(() => {
-    if (!callAccepted && !incomingCall && selectedUser && stream) {
-      const peer = new Peer({
-        initiator: true,
-        trickle: false,
-        stream,
-        config: {
-          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-        },
-      });
-
-      peer.on("signal", (data) => {
-        socket.emit("callUser", {
-          userToCall: selectedUser._id,
-          signalData: data,
-          from: authUser._id,
-        });
-      });
-
-      peer.on("stream", (currentStream) => {
-        console.log("🔥 REMOTE STREAM RECEIVED");
-        if (userVideo.current) {
-          userVideo.current.srcObject = currentStream;
-        }
-      });
-
-      connectionRef.current = peer;
-    }
-  }, [stream]);
-
-  //  ANSWER
+  //  RECEIVER SIDE (ANSWER CALL)
   useEffect(() => {
     if (callAccepted && incomingCall && stream) {
       const peer = new Peer({
@@ -79,45 +51,40 @@ const VideoCall = () => {
         });
       });
 
-      peer.on("stream", (currentStream) => {
+      peer.on("stream", (remoteStream) => {
         if (userVideo.current) {
-          userVideo.current.srcObject = currentStream;
+          userVideo.current.srcObject = remoteStream;
         }
       });
 
-      //  SAFE SIGNAL
       if (incomingCall?.signal) {
-        try {
-          peer.signal(incomingCall.signal);
-        } catch (err) {
-          console.log("Signal error:", err);
-        }
+        peer.signal(incomingCall.signal);
       }
 
       connectionRef.current = peer;
     }
   }, [callAccepted, stream]);
 
-  //  FIX: SINGLE socket listener
+  // CALLER SIDE (LISTEN FOR ACCEPT)
   useEffect(() => {
     const handleCallAccepted = (signal) => {
       if (connectionRef.current && signal) {
         connectionRef.current.signal(signal);
       }
+
+      dispatch(acceptCall()); // caller ko bhi UI show
     };
 
     socket.on("callAccepted", handleCallAccepted);
 
-    return () => {
-      socket.off("callAccepted", handleCallAccepted);
-    };
+    return () => socket.off("callAccepted", handleCallAccepted);
   }, []);
 
   //  END CALL
   const leaveCall = () => {
     if (connectionRef.current) {
       connectionRef.current.destroy();
-      connectionRef.current = null; //  VERY IMPORTANT
+      connectionRef.current = null;
     }
 
     dispatch(endCall());
@@ -127,13 +94,13 @@ const VideoCall = () => {
     });
   };
 
-  //  DON'T RENDER IF NOT IN CALL
+  //  DON'T SHOW IF NO CALL
   if (!callAccepted) return null;
 
   return (
     <div className="relative h-full w-full bg-black flex items-center justify-center">
 
-      {/*  REMOTE VIDEO */}
+      {/* 🎥 REMOTE VIDEO */}
       <video
         ref={userVideo}
         autoPlay
@@ -141,7 +108,7 @@ const VideoCall = () => {
         className="w-full h-full object-cover"
       />
 
-      {/* MY VIDEO */}
+      {/*  MY VIDEO */}
       <video
         ref={myVideo}
         autoPlay
@@ -149,7 +116,7 @@ const VideoCall = () => {
         className="w-32 h-40 object-cover absolute top-4 right-4 rounded-lg border-2 border-white"
       />
 
-      {/* END CALL */}
+      {/* END CALL BUTTON */}
       <button
         onClick={leaveCall}
         className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-red-500 hover:bg-red-600 text-white p-4 rounded-full shadow-lg"
