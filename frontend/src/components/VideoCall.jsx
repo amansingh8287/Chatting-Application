@@ -6,7 +6,7 @@ import { endCall } from "../redux/userSlice";
 import { IoCall } from "react-icons/io5";
 
 const VideoCall = () => {
-  const { selectedUser, incomingCall, callAccepted } = useSelector((s) => s.user);
+  const { selectedUser, incomingCall, callAccepted, authUser } = useSelector((s) => s.user);
   const dispatch = useDispatch();
 
   const myVideo = useRef();
