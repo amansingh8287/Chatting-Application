@@ -10,6 +10,9 @@ const userSlice = createSlice({
     users: [],
     profileUser: null,
     showProfile: false,
+    incomingCall: null,
+    callAccepted: false,
+    callEnded: false,
   },
   reducers: {
     setAuthUser: (state, action) => {
@@ -32,6 +35,17 @@ const userSlice = createSlice({
     },
     setShowProfile: (state, action) => {
       state.showProfile = action.payload;
+    },
+    setIncomingCall: (state, action) => {
+      state.incomingCall = action.payload;
+    },
+    acceptCall: (state) => {
+      state.callAccepted = true;
+    },
+    endCall: (state) => {
+      state.callEnded = true;
+      state.callAccepted = false;
+      state.incomingCall = null;
     },
   },
 });

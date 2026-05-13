@@ -9,6 +9,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setOnlineUsers } from "./redux/userSlice";
 import UserProfileModal from "./components/UserProfileModal";
 import ForgotPassword from "./components/ForgotPassword";
+import IncomingCallPopup from "./components/IncomingCallPopup"; 
 
 const router = createBrowserRouter([
   { path: "/", element: <HomePage /> },
@@ -43,18 +44,46 @@ function App() {
     };
 
     socket.on("getOnlineUsers", handleOnlineUsers);
+    
 
-    //  CLEANUP
+    // =========================
+    //  VIDEO CALL EVENTS
+    // =========================
+
+    socket.on("incomingCall", (data) => {
+      console.log("Incoming Call:", data);
+      dispatch(setIncomingCall(data));
+    });
+
+    socket.on("callEnded", () => {
+      console.log(" Call Ended");
+      dispatch(endCall());
+    });
+
+    socket.on("callRejected", () => {
+      console.log(" Call Rejected");
+      dispatch(endCall());
+    });
+
+    // =========================
+    // CLEANUP
+    // =========================
     return () => {
       socket.off("getOnlineUsers", handleOnlineUsers);
+      socket.off("incomingCall");
+      socket.off("callEnded");
+      socket.off("callRejected");
       socket.disconnect();
     };
 
   }, [authUser, dispatch]);
 
+
   return (
     <div className="h-screen w-full">
       <RouterProvider router={router} />
+      <IncomingCallPopup />
+      <VideoCall />
       <UserProfileModal />
     </div>
   );

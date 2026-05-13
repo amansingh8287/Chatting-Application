@@ -82,6 +82,43 @@ export const initSocket = (server) => {
 
       console.log("UPDATED MAP:", userSocketMap);
     });
+
+    // ================= VIDEO CALL =================
+
+    socket.on("callUser", ({ userToCall, signalData, from }) => {
+      const receiverSocketId = userSocketMap[userToCall?.toString()];
+
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("incomingCall", {
+          signal: signalData,
+          from: from || userId,
+        });
+      }
+    });
+
+    socket.on("answerCall", ({ to, signal }) => {
+      const callerSocketId = userSocketMap[to?.toString()];
+
+      if (callerSocketId) {
+        io.to(callerSocketId).emit("callAccepted", signal);
+      }
+    });
+
+    socket.on("rejectCall", ({ to }) => {
+      const callerSocketId = userSocketMap[to?.toString()];
+
+      if (callerSocketId) {
+        io.to(callerSocketId).emit("callRejected");
+      }
+    });
+
+    socket.on("endCall", ({ to }) => {
+      const otherSocketId = userSocketMap[to?.toString()];
+
+      if (otherSocketId) {
+        io.to(otherSocketId).emit("callEnded");
+      }
+    });
   });
 };
 
