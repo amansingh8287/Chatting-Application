@@ -57,5 +57,8 @@ export const {
   setOnlineUsers,
   setProfileUser,
   setShowProfile,
+  setIncomingCall,
+  acceptCall,   
+  endCall
 } = userSlice.actions;
 export default userSlice.reducer;
