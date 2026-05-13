@@ -14,7 +14,8 @@ const VideoCall = () => {
   const connectionRef = useRef();
 
   const [stream, setStream] = useState(null);
-  const socket = getSocket();
+
+  const socket = getSocket(); //  FIX: missing tha
 
   //  get camera
   useEffect(() => {
@@ -54,15 +55,11 @@ const VideoCall = () => {
         }
       });
 
-      socket.on("callAccepted", (signal) => {
-        peer.signal(signal);
-      });
-
       connectionRef.current = peer;
     }
   }, [stream]);
 
-  // ANSWER
+  //  ANSWER
   useEffect(() => {
     if (callAccepted && incomingCall && stream) {
       const peer = new Peer({
@@ -87,15 +84,41 @@ const VideoCall = () => {
         }
       });
 
-      peer.signal(incomingCall.signal);
+      //  SAFE SIGNAL
+      if (incomingCall?.signal) {
+        try {
+          peer.signal(incomingCall.signal);
+        } catch (err) {
+          console.log("Signal error:", err);
+        }
+      }
 
       connectionRef.current = peer;
     }
   }, [callAccepted, stream]);
 
+  //  FIX: SINGLE socket listener
+  useEffect(() => {
+    const handleCallAccepted = (signal) => {
+      if (connectionRef.current && signal) {
+        connectionRef.current.signal(signal);
+      }
+    };
+
+    socket.on("callAccepted", handleCallAccepted);
+
+    return () => {
+      socket.off("callAccepted", handleCallAccepted);
+    };
+  }, []);
+
   //  END CALL
   const leaveCall = () => {
-    connectionRef.current?.destroy();
+    if (connectionRef.current) {
+      connectionRef.current.destroy();
+      connectionRef.current = null; //  VERY IMPORTANT
+    }
+
     dispatch(endCall());
 
     socket.emit("endCall", {
@@ -103,20 +126,20 @@ const VideoCall = () => {
     });
   };
 
-  // DON'T RENDER IF NOT IN CALL
+  //  DON'T RENDER IF NOT IN CALL
   if (!callAccepted) return null;
 
   return (
     <div className="relative h-full w-full bg-black flex items-center justify-center">
 
-      {/* REMOTE VIDEO */}
+      {/*  REMOTE VIDEO */}
       <video
         ref={userVideo}
         autoPlay
         className="w-full h-full object-cover"
       />
 
-      {/* MY VIDEO (small) */}
+      {/* MY VIDEO */}
       <video
         ref={myVideo}
         autoPlay
@@ -124,7 +147,7 @@ const VideoCall = () => {
         className="w-32 h-40 object-cover absolute top-4 right-4 rounded-lg border-2 border-white"
       />
 
-      {/* END CALL BUTTON */}
+      {/* END CALL */}
       <button
         onClick={leaveCall}
         className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-red-500 hover:bg-red-600 text-white p-4 rounded-full shadow-lg"

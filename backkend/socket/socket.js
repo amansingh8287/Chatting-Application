@@ -58,10 +58,57 @@ export const initSocket = (server) => {
     });
 
     // =========================
+    //  VIDEO CALL EVENTS
+    // =========================
+
+    socket.on("callUser", ({ userToCall, signalData, from }) => {
+      const receiverSocketId = userSocketMap[userToCall?.toString()];
+
+      console.log("CALL:", userId, "→", userToCall);
+
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("incomingCall", {
+          signal: signalData,
+          from: from || userId,
+        });
+      }
+    });
+
+    socket.on("answerCall", ({ to, signal }) => {
+      const callerSocketId = userSocketMap[to?.toString()];
+
+      console.log("CALL ACCEPTED:", to);
+
+      if (callerSocketId) {
+        io.to(callerSocketId).emit("callAccepted", signal);
+      }
+    });
+
+    socket.on("rejectCall", ({ to }) => {
+      const callerSocketId = userSocketMap[to?.toString()];
+
+      console.log(" CALL REJECTED:", to);
+
+      if (callerSocketId) {
+        io.to(callerSocketId).emit("callRejected");
+      }
+    });
+
+    socket.on("endCall", ({ to }) => {
+      const otherSocketId = userSocketMap[to?.toString()];
+
+      console.log(" CALL ENDED:", userId, "→", to);
+
+      if (otherSocketId) {
+        io.to(otherSocketId).emit("callEnded");
+      }
+    });
+
+    // =========================
     // DISCONNECT
     // =========================
     socket.on("disconnect", async () => {
-      console.log("❌ User disconnected:", userId);
+      console.log(" User disconnected:", userId);
 
       if (!userId || userId === "undefined") return;
 
@@ -81,43 +128,6 @@ export const initSocket = (server) => {
       io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
       console.log("UPDATED MAP:", userSocketMap);
-    });
-
-    // ================= VIDEO CALL =================
-
-    socket.on("callUser", ({ userToCall, signalData, from }) => {
-      const receiverSocketId = userSocketMap[userToCall?.toString()];
-
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit("incomingCall", {
-          signal: signalData,
-          from: from || userId,
-        });
-      }
-    });
-
-    socket.on("answerCall", ({ to, signal }) => {
-      const callerSocketId = userSocketMap[to?.toString()];
-
-      if (callerSocketId) {
-        io.to(callerSocketId).emit("callAccepted", signal);
-      }
-    });
-
-    socket.on("rejectCall", ({ to }) => {
-      const callerSocketId = userSocketMap[to?.toString()];
-
-      if (callerSocketId) {
-        io.to(callerSocketId).emit("callRejected");
-      }
-    });
-
-    socket.on("endCall", ({ to }) => {
-      const otherSocketId = userSocketMap[to?.toString()];
-
-      if (otherSocketId) {
-        io.to(otherSocketId).emit("callEnded");
-      }
     });
   });
 };
