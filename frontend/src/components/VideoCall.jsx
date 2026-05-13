@@ -45,11 +45,12 @@ const VideoCall = () => {
         socket.emit("callUser", {
           userToCall: selectedUser._id,
           signalData: data,
-          from: selectedUser._id,
+          from: authUser._id,
         });
       });
 
       peer.on("stream", (currentStream) => {
+        console.log("🔥 REMOTE STREAM RECEIVED");
         if (userVideo.current) {
           userVideo.current.srcObject = currentStream;
         }
@@ -136,6 +137,7 @@ const VideoCall = () => {
       <video
         ref={userVideo}
         autoPlay
+        playsInline
         className="w-full h-full object-cover"
       />
 
