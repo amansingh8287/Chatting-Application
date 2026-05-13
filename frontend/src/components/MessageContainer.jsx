@@ -8,7 +8,6 @@ import chatBg from "../assets/chat-bg.jpg";
 import useGetRealTimeMessage from "../hooks/useGetRealTimeMessage";
 import VideoCall from "./VideoCall";
 import { IoCall } from "react-icons/io5";
-import { useSelector } from "react-redux";
 
 const MessageContainer = () => {
   const { selectedUser, authUser, onlineUsers, callAccepted } = useSelector(
