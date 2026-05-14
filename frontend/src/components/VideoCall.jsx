@@ -83,7 +83,11 @@ const VideoCall = () => {
 
   useEffect(() => {
     const handleStartCall = () => {
-      startCall();
+      if (stream) {
+        startCall(); // ✔ safe
+      } else {
+        console.log("⏳ waiting for stream...");
+      }
     };
 
     window.addEventListener("start-call", handleStartCall);
