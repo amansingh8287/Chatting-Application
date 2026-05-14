@@ -7,7 +7,7 @@ import { IoCall } from "react-icons/io5";
 
 const VideoCall = () => {
   const { selectedUser, incomingCall, callAccepted, authUser } = useSelector(
-    (s) => s.user,
+    (s) => s.user
   );
 
   const dispatch = useDispatch();
@@ -18,15 +18,12 @@ const VideoCall = () => {
   const peerRef = useRef();
 
   const [stream, setStream] = useState(null);
-  const [isCalling, setIsCalling] = useState(false);
-  const [pendingCall, setPendingCall] = useState(false);
 
   // 🎥 CAMERA
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((s) => {
-        console.log("🎥 LOCAL STREAM:", s);
         setStream(s);
         if (myVideo.current) {
           myVideo.current.srcObject = s;
@@ -35,7 +32,7 @@ const VideoCall = () => {
       .catch((err) => console.log("Camera error:", err));
   }, []);
 
-  // 📞 START CALL (BUTTON BASED)
+  // 📞 START CALL (BUTTON CLICK)
   const startCall = () => {
     if (!stream) {
       console.log("❌ Stream not ready");
@@ -43,21 +40,13 @@ const VideoCall = () => {
     }
 
     console.log("📞 STARTING CALL");
-    setIsCalling(true);
 
     const peer = new Peer({
       initiator: true,
       trickle: false,
       stream,
       config: {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          {
-            urls: "turn:openrelay.metered.ca:80",
-            username: "openrelayproject",
-            credential: "openrelayproject",
-          },
-        ],
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
       },
     });
 
@@ -73,40 +62,18 @@ const VideoCall = () => {
 
     peer.on("stream", (remoteStream) => {
       console.log("🔥 CALLER GOT STREAM");
+
       if (userVideo.current) {
         userVideo.current.srcObject = remoteStream;
-        userVideo.current.play().catch(() => {});
       }
     });
 
     peerRef.current = peer;
   };
 
-  useEffect(() => {
-    if (pendingCall && stream) {
-      console.log(" STARTING CALL AFTER STREAM READY");
-
-      startCall();
-      setPendingCall(false);
-    }
-  }, [pendingCall, stream]);
-
-  useEffect(() => {
-    const handleStartCall = () => {
-      console.log("📞 CALL REQUEST RECEIVED");
-      setPendingCall(true);
-    };
-
-    window.addEventListener("start-call", handleStartCall);
-
-    return () => {
-      window.removeEventListener("start-call", handleStartCall);
-    };
-  }, []);
-
   // 📲 RECEIVER SIDE
   useEffect(() => {
-    if (incomingCall && callAccepted && stream) {
+    if (incomingCall && stream) {
       console.log("📡 RECEIVER START");
 
       const peer = new Peer({
@@ -114,19 +81,11 @@ const VideoCall = () => {
         trickle: false,
         stream,
         config: {
-          iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            {
-              urls: "turn:openrelay.metered.ca:80",
-              username: "openrelayproject",
-              credential: "openrelayproject",
-            },
-          ],
+          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
         },
       });
 
       peer.on("signal", (data) => {
-        console.log("📡 SENDING ANSWER");
         socket.emit("answerCall", {
           signal: data,
           to: incomingCall.from,
@@ -135,30 +94,26 @@ const VideoCall = () => {
 
       peer.on("stream", (remoteStream) => {
         console.log("🔥 RECEIVER GOT STREAM");
+
         if (userVideo.current) {
           userVideo.current.srcObject = remoteStream;
-          userVideo.current.play().catch(() => {});
         }
       });
 
       if (incomingCall?.signal) {
-        try {
-          peer.signal(incomingCall.signal);
-        } catch (err) {
-          console.log("❌ SIGNAL ERROR:", err);
-        }
+        peer.signal(incomingCall.signal);
       }
 
       peerRef.current = peer;
     }
-  }, [callAccepted, incomingCall, stream]);
+  }, [incomingCall, stream]);
 
-  // 🔁 CALL ACCEPTED (caller side)
+  // 📡 CALL ACCEPTED
   useEffect(() => {
     const handleCallAccepted = (signal) => {
-      console.log("📡 SIGNAL BACK RECEIVED");
+      console.log("📡 CALL ACCEPTED");
 
-      if (peerRef.current && signal) {
+      if (peerRef.current) {
         peerRef.current.signal(signal);
       }
 
@@ -178,26 +133,15 @@ const VideoCall = () => {
     socket.emit("endCall", {
       to: selectedUser._id,
     });
-
-    setIsCalling(false);
   };
 
-  // ⌨ ESC TO END CALL
-  useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === "Escape") leaveCall();
-    };
-
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, []);
-
-  // ❌ HIDE IF NOTHING
-  if (!incomingCall && !isCalling && !callAccepted) return null;
+  // ❌ DO NOT HIDE COMPONENT
+  // (important fix)
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-black z-[999] flex items-center justify-center">
-      {/* 🎥 REMOTE VIDEO */}
+
+      {/* REMOTE VIDEO */}
       <video
         ref={userVideo}
         autoPlay
@@ -205,7 +149,7 @@ const VideoCall = () => {
         className="w-full h-full object-cover"
       />
 
-      {/* 🎥 MY VIDEO */}
+      {/* MY VIDEO */}
       <video
         ref={myVideo}
         autoPlay
@@ -213,7 +157,7 @@ const VideoCall = () => {
         className="absolute w-40 h-48 top-4 right-4 rounded-lg border-2 border-white"
       />
 
-      {/* 📞 START CALL BUTTON */}
+      {/* START CALL BUTTON */}
       {!incomingCall && !callAccepted && (
         <button
           onClick={startCall}
@@ -223,8 +167,8 @@ const VideoCall = () => {
         </button>
       )}
 
-      {/* ❌ END CALL */}
-      {(callAccepted || isCalling) && (
+      {/* END CALL BUTTON */}
+      {(incomingCall || callAccepted) && (
         <button
           onClick={leaveCall}
           className="absolute bottom-6 bg-red-500 p-4 rounded-full text-white"
