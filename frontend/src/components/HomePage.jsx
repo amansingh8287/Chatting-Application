@@ -3,6 +3,7 @@ import Sidebar from './Sidebar'
 import MessageContainer from './MessageContainer'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import VideoCall from "./VideoCall";
 
 const HomePage = () => {
   const { authUser } = useSelector(store => store.user);

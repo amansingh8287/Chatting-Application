@@ -136,9 +136,6 @@ const VideoCall = () => {
     });
   };
 
-  // ❌ hide when no call
-  if (!callAccepted && !incomingCall) return null;
-
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") {
@@ -152,6 +149,9 @@ const VideoCall = () => {
       window.removeEventListener("keydown", handleEsc);
     };
   }, []);
+
+  // ❌ hide when no call
+  if (!callAccepted && !incomingCall) return null;
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-black z-[999] flex items-center justify-center">
