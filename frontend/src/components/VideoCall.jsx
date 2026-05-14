@@ -18,7 +18,7 @@ const VideoCall = () => {
   const peerRef = useRef();
 
   const [stream, setStream] = useState(null);
-  const [isFullScreen, setIsFullScreen] = useState(true);
+  const [isCalling, setIsCalling] = useState(false);
 
   // 🎥 CAMERA
   useEffect(() => {
@@ -31,53 +31,67 @@ const VideoCall = () => {
           myVideo.current.srcObject = s;
         }
       })
-      .catch((err) => {
-        console.log("Camera error:", err);
-      });
+      .catch((err) => console.log("Camera error:", err));
   }, []);
 
-  // 📞 CALLER SIDE
-  useEffect(() => {
-    if (stream && selectedUser && !callAccepted) {
-      console.log("📞 CALLER PEER CREATED");
-
-      const peer = new Peer({
-        initiator: true,
-        trickle: false,
-        stream,
-        config: {
-          iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            {
-              urls: "turn:openrelay.metered.ca:80",
-              username: "openrelayproject",
-              credential: "openrelayproject",
-            },
-          ],
-        },
-      });
-
-      peer.on("signal", (data) => {
-        console.log("📡 SENDING SIGNAL");
-
-        socket.emit("callUser", {
-          userToCall: selectedUser._id,
-          signalData: data,
-          from: authUser._id,
-        });
-      });
-
-      peer.on("stream", (remoteStream) => {
-        console.log("🔥 CALLER GOT STREAM");
-
-        if (userVideo.current) {
-          userVideo.current.srcObject = remoteStream;
-        }
-      });
-
-      peerRef.current = peer;
+  // 📞 START CALL (BUTTON BASED)
+  const startCall = () => {
+    if (!stream) {
+      console.log("❌ Stream not ready");
+      return;
     }
-  }, [stream, selectedUser, callAccepted]);
+
+    console.log("📞 STARTING CALL");
+    setIsCalling(true);
+
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream,
+      config: {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          {
+            urls: "turn:openrelay.metered.ca:80",
+            username: "openrelayproject",
+            credential: "openrelayproject",
+          },
+        ],
+      },
+    });
+
+    peer.on("signal", (data) => {
+      console.log("📡 SENDING SIGNAL:", data);
+
+      socket.emit("callUser", {
+        userToCall: selectedUser._id,
+        signalData: data,
+        from: authUser._id,
+      });
+    });
+
+    peer.on("stream", (remoteStream) => {
+      console.log("🔥 CALLER GOT STREAM");
+      if (userVideo.current) {
+        userVideo.current.srcObject = remoteStream;
+        userVideo.current.play().catch(() => {});
+      }
+    });
+
+    peerRef.current = peer;
+  };
+
+  useEffect(() => {
+    const handleStartCall = () => {
+      startCall();
+    };
+
+    window.addEventListener("start-call", handleStartCall);
+
+    return () => {
+      window.removeEventListener("start-call", handleStartCall);
+    };
+  }, [stream]);
 
   // 📲 RECEIVER SIDE
   useEffect(() => {
@@ -116,7 +130,6 @@ const VideoCall = () => {
         }
       });
 
-      // 🔥 SAFE SIGNAL APPLY
       if (incomingCall?.signal) {
         try {
           peer.signal(incomingCall.signal);
@@ -127,7 +140,7 @@ const VideoCall = () => {
 
       peerRef.current = peer;
     }
-  }, [callAccepted, stream, incomingCall]);
+  }, [callAccepted, incomingCall, stream]);
 
   // 🔁 CALL ACCEPTED (caller side)
   useEffect(() => {
@@ -154,22 +167,22 @@ const VideoCall = () => {
     socket.emit("endCall", {
       to: selectedUser._id,
     });
+
+    setIsCalling(false);
   };
 
   // ⌨ ESC TO END CALL
   useEffect(() => {
     const handleEsc = (e) => {
-      if (e.key === "Escape") {
-        leaveCall();
-      }
+      if (e.key === "Escape") leaveCall();
     };
 
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  // ❌ hide if no call
-  if (!callAccepted && !incomingCall) return null;
+  // ❌ HIDE IF NOTHING
+  if (!incomingCall && !isCalling && !callAccepted) return null;
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-black z-[999] flex items-center justify-center">
@@ -186,26 +199,28 @@ const VideoCall = () => {
         ref={myVideo}
         autoPlay
         muted
-        className={`absolute rounded-lg border-2 border-white ${
-          isFullScreen ? "w-40 h-48 top-4 right-4" : "w-24 h-32 top-2 right-2"
-        }`}
+        className="absolute w-40 h-48 top-4 right-4 rounded-lg border-2 border-white"
       />
 
-      {/* FULLSCREEN BUTTON */}
-      <button
-        onClick={() => setIsFullScreen(!isFullScreen)}
-        className="absolute top-4 left-4 bg-white/20 text-white px-3 py-1 rounded"
-      >
-        {isFullScreen ? "Exit" : "Full"}
-      </button>
+      {/* 📞 START CALL BUTTON */}
+      {!incomingCall && !callAccepted && (
+        <button
+          onClick={startCall}
+          className="absolute bottom-20 bg-green-500 p-4 rounded-full text-white"
+        >
+          <IoCall size={24} />
+        </button>
+      )}
 
-      {/* END CALL */}
-      <button
-        onClick={leaveCall}
-        className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-red-500 p-4 rounded-full"
-      >
-        <IoCall size={24} style={{ transform: "rotate(135deg)" }} />
-      </button>
+      {/* ❌ END CALL */}
+      {(callAccepted || isCalling) && (
+        <button
+          onClick={leaveCall}
+          className="absolute bottom-6 bg-red-500 p-4 rounded-full text-white"
+        >
+          <IoCall size={24} style={{ transform: "rotate(135deg)" }} />
+        </button>
+      )}
     </div>
   );
 };

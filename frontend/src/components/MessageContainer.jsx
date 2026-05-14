@@ -106,16 +106,11 @@ const MessageContainer = () => {
               {/* RIGHT SIDE CALL BUTTON */}
               <button
                 onClick={() => {
-                  const socket = getSocket();
-
-                  socket.emit("callUser", {
-                    userToCall: selectedUser._id,
-                    from: authUser._id,
-                  });
+                  window.dispatchEvent(new Event("start-call"));
                 }}
-                className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow-lg"
+                className="bg-green-500 p-2 rounded-full text-white"
               >
-                <IoCall size={20} />
+                <IoCall />
               </button>
             </div>
 
