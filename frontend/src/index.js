@@ -8,6 +8,11 @@ import store from './redux/store';
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistStore } from 'redux-persist';
 import axios from "axios";
+import process from "process";
+
+window.global = window;
+window.process = process;
+
 axios.defaults.withCredentials = true;
 
 let persistor = persistStore(store);
