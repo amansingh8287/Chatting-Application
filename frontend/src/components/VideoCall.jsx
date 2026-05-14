@@ -110,6 +110,7 @@ const VideoCall = () => {
 
   // 📡 CALL ACCEPTED
   useEffect(() => {
+    if (!socket) return; 
     const handleCallAccepted = (signal) => {
       console.log("📡 CALL ACCEPTED");
 
@@ -123,7 +124,7 @@ const VideoCall = () => {
     socket.on("callAccepted", handleCallAccepted);
 
     return () => socket.off("callAccepted", handleCallAccepted);
-  }, []);
+  }, [socket]);
 
   // ❌ END CALL
   const leaveCall = () => {
