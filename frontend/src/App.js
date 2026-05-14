@@ -51,6 +51,10 @@ function App() {
 
     socket.on("incomingCall", (data) => {
       console.log("Incoming Call:", data);
+      if (!data.signal) {
+        console.log("❌ signal missing, ignoring...");
+        return;
+      }
       dispatch(setIncomingCall(data));
     });
 

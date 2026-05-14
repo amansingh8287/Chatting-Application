@@ -66,6 +66,12 @@ export const initSocket = (server) => {
 
       console.log("CALL:", userId, "→", userToCall);
 
+      console.log("📞 CALL USER DATA:", {
+        userToCall,
+        signalData,
+        from,
+      });
+
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("incomingCall", {
           signal: signalData,

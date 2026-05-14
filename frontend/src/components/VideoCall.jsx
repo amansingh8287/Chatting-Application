@@ -7,7 +7,7 @@ import { IoCall } from "react-icons/io5";
 
 const VideoCall = () => {
   const { selectedUser, incomingCall, callAccepted, authUser } = useSelector(
-    (s) => s.user,
+    (s) => s.user
   );
 
   const dispatch = useDispatch();
@@ -25,8 +25,11 @@ const VideoCall = () => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((s) => {
+        console.log("🎥 LOCAL STREAM:", s);
         setStream(s);
-        if (myVideo.current) myVideo.current.srcObject = s;
+        if (myVideo.current) {
+          myVideo.current.srcObject = s;
+        }
       })
       .catch((err) => {
         console.log("Camera error:", err);
@@ -36,6 +39,8 @@ const VideoCall = () => {
   // 📞 CALLER SIDE
   useEffect(() => {
     if (!incomingCall && stream && selectedUser) {
+      console.log("📞 CALLER PEER CREATED");
+
       const peer = new Peer({
         initiator: true,
         trickle: false,
@@ -53,6 +58,7 @@ const VideoCall = () => {
       });
 
       peer.on("signal", (data) => {
+        console.log("📡 SENDING SIGNAL");
         socket.emit("callUser", {
           userToCall: selectedUser._id,
           signalData: data,
@@ -64,16 +70,19 @@ const VideoCall = () => {
         console.log("🔥 CALLER GOT STREAM");
         if (userVideo.current) {
           userVideo.current.srcObject = remoteStream;
+          userVideo.current.play().catch(() => {});
         }
       });
 
       peerRef.current = peer;
     }
-  }, [stream]);
+  }, [stream, incomingCall, selectedUser]);
 
   // 📲 RECEIVER SIDE
   useEffect(() => {
     if (incomingCall && callAccepted && stream) {
+      console.log("📡 RECEIVER START");
+
       const peer = new Peer({
         initiator: false,
         trickle: false,
@@ -91,6 +100,7 @@ const VideoCall = () => {
       });
 
       peer.on("signal", (data) => {
+        console.log("📡 SENDING ANSWER");
         socket.emit("answerCall", {
           signal: data,
           to: incomingCall.from,
@@ -101,23 +111,32 @@ const VideoCall = () => {
         console.log("🔥 RECEIVER GOT STREAM");
         if (userVideo.current) {
           userVideo.current.srcObject = remoteStream;
-          userVideo.current.play().catch((e) => {
-            console.log("Autoplay blocked:", e);
-          });
+          userVideo.current.play().catch(() => {});
         }
       });
 
-      peer.signal(incomingCall.signal);
+      // 🔥 SAFE SIGNAL APPLY
+      if (incomingCall?.signal) {
+        try {
+          peer.signal(incomingCall.signal);
+        } catch (err) {
+          console.log("❌ SIGNAL ERROR:", err);
+        }
+      }
+
       peerRef.current = peer;
     }
-  }, [callAccepted, stream]);
+  }, [callAccepted, stream, incomingCall]);
 
   // 🔁 CALL ACCEPTED (caller side)
   useEffect(() => {
     const handleCallAccepted = (signal) => {
-      if (peerRef.current) {
+      console.log("📡 SIGNAL BACK RECEIVED");
+
+      if (peerRef.current && signal) {
         peerRef.current.signal(signal);
       }
+
       dispatch(acceptCall());
     };
 
@@ -136,6 +155,7 @@ const VideoCall = () => {
     });
   };
 
+  // ⌨ ESC TO END CALL
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") {
@@ -144,26 +164,21 @@ const VideoCall = () => {
     };
 
     window.addEventListener("keydown", handleEsc);
-
-    return () => {
-      window.removeEventListener("keydown", handleEsc);
-    };
+    return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  // ❌ hide when no call
+  // ❌ hide if no call
   if (!callAccepted && !incomingCall) return null;
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-black z-[999] flex items-center justify-center">
+
       {/* 🎥 REMOTE VIDEO */}
       <video
-        ref={myVideo}
+        ref={userVideo}
         autoPlay
-        muted
         playsInline
-        className={`absolute rounded-lg border-2 border-white ${
-          isFullScreen ? "w-40 h-48 top-4 right-4" : "w-24 h-32 top-2 right-2"
-        }`}
+        className="w-full h-full object-cover"
       />
 
       {/* 🎥 MY VIDEO */}
@@ -171,9 +186,14 @@ const VideoCall = () => {
         ref={myVideo}
         autoPlay
         muted
-        className="w-32 h-40 absolute top-4 right-4 rounded-lg border-2 border-white"
+        className={`absolute rounded-lg border-2 border-white ${
+          isFullScreen
+            ? "w-40 h-48 top-4 right-4"
+            : "w-24 h-32 top-2 right-2"
+        }`}
       />
 
+      {/* FULLSCREEN BUTTON */}
       <button
         onClick={() => setIsFullScreen(!isFullScreen)}
         className="absolute top-4 left-4 bg-white/20 text-white px-3 py-1 rounded"
@@ -181,7 +201,7 @@ const VideoCall = () => {
         {isFullScreen ? "Exit" : "Full"}
       </button>
 
-      {/* 🔴 END CALL */}
+      {/* END CALL */}
       <button
         onClick={leaveCall}
         className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-red-500 p-4 rounded-full"
