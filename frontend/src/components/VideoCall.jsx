@@ -19,6 +19,7 @@ const VideoCall = () => {
 
   const [stream, setStream] = useState(null);
   const [isCalling, setIsCalling] = useState(false);
+  const [pendingCall, setPendingCall] = useState(false);
 
   // 🎥 CAMERA
   useEffect(() => {
@@ -82,12 +83,18 @@ const VideoCall = () => {
   };
 
   useEffect(() => {
+    if (pendingCall && stream) {
+      console.log(" STARTING CALL AFTER STREAM READY");
+
+      startCall();
+      setPendingCall(false);
+    }
+  }, [pendingCall, stream]);
+
+  useEffect(() => {
     const handleStartCall = () => {
-      if (stream) {
-        startCall(); // ✔ safe
-      } else {
-        console.log("⏳ waiting for stream...");
-      }
+      console.log("📞 CALL REQUEST RECEIVED");
+      setPendingCall(true);
     };
 
     window.addEventListener("start-call", handleStartCall);
@@ -95,7 +102,7 @@ const VideoCall = () => {
     return () => {
       window.removeEventListener("start-call", handleStartCall);
     };
-  }, [stream]);
+  }, []);
 
   // 📲 RECEIVER SIDE
   useEffect(() => {
