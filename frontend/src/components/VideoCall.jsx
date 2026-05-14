@@ -7,7 +7,7 @@ import { IoCall } from "react-icons/io5";
 
 const VideoCall = () => {
   const { selectedUser, incomingCall, callAccepted, authUser } = useSelector(
-    (s) => s.user
+    (s) => s.user,
   );
 
   const dispatch = useDispatch();
@@ -38,7 +38,7 @@ const VideoCall = () => {
 
   // 📞 CALLER SIDE
   useEffect(() => {
-    if (!incomingCall && stream && selectedUser) {
+    if (stream && selectedUser && !callAccepted) {
       console.log("📞 CALLER PEER CREATED");
 
       const peer = new Peer({
@@ -59,6 +59,7 @@ const VideoCall = () => {
 
       peer.on("signal", (data) => {
         console.log("📡 SENDING SIGNAL");
+
         socket.emit("callUser", {
           userToCall: selectedUser._id,
           signalData: data,
@@ -68,15 +69,15 @@ const VideoCall = () => {
 
       peer.on("stream", (remoteStream) => {
         console.log("🔥 CALLER GOT STREAM");
+
         if (userVideo.current) {
           userVideo.current.srcObject = remoteStream;
-          userVideo.current.play().catch(() => {});
         }
       });
 
       peerRef.current = peer;
     }
-  }, [stream, incomingCall, selectedUser]);
+  }, [stream, selectedUser, callAccepted]);
 
   // 📲 RECEIVER SIDE
   useEffect(() => {
@@ -172,7 +173,6 @@ const VideoCall = () => {
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-black z-[999] flex items-center justify-center">
-
       {/* 🎥 REMOTE VIDEO */}
       <video
         ref={userVideo}
@@ -187,9 +187,7 @@ const VideoCall = () => {
         autoPlay
         muted
         className={`absolute rounded-lg border-2 border-white ${
-          isFullScreen
-            ? "w-40 h-48 top-4 right-4"
-            : "w-24 h-32 top-2 right-2"
+          isFullScreen ? "w-40 h-48 top-4 right-4" : "w-24 h-32 top-2 right-2"
         }`}
       />
 
