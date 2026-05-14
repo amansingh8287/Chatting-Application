@@ -7,7 +7,7 @@ import { IoCall } from "react-icons/io5";
 
 const VideoCall = () => {
   const { selectedUser, incomingCall, callAccepted, authUser } = useSelector(
-    (s) => s.user
+    (s) => s.user,
   );
 
   const dispatch = useDispatch();
@@ -46,7 +46,20 @@ const VideoCall = () => {
       trickle: false,
       stream,
       config: {
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+
+          {
+            urls: "turn:openrelay.metered.ca:80",
+            username: "openrelayproject",
+            credential: "openrelayproject",
+          },
+          {
+            urls: "turn:openrelay.metered.ca:443",
+            username: "openrelayproject",
+            credential: "openrelayproject",
+          },
+        ],
       },
     });
 
@@ -81,7 +94,20 @@ const VideoCall = () => {
         trickle: false,
         stream,
         config: {
-          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+
+            {
+              urls: "turn:openrelay.metered.ca:80",
+              username: "openrelayproject",
+              credential: "openrelayproject",
+            },
+            {
+              urls: "turn:openrelay.metered.ca:443",
+              username: "openrelayproject",
+              credential: "openrelayproject",
+            },
+          ],
         },
       });
 
@@ -110,7 +136,7 @@ const VideoCall = () => {
 
   // 📡 CALL ACCEPTED
   useEffect(() => {
-    if (!socket) return; 
+    if (!socket) return;
     const handleCallAccepted = (signal) => {
       console.log("📡 CALL ACCEPTED");
 
@@ -141,7 +167,6 @@ const VideoCall = () => {
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-black z-[999] flex items-center justify-center">
-
       {/* REMOTE VIDEO */}
       <video
         ref={userVideo}
