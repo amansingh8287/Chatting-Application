@@ -64,7 +64,6 @@ const MessageContainer = () => {
       // SAVE PEER GLOBAL
       window.peer = peer;
       window.localStream = stream;
-
     } catch (err) {
       console.log("Call error:", err);
     }
@@ -105,8 +104,15 @@ const MessageContainer = () => {
               </div>
 
               {/* RIGHT SIDE CALL BUTTON */}
-               <button
-                onClick={handleCall}
+              <button
+                onClick={() => {
+                  const socket = getSocket();
+
+                  socket.emit("callUser", {
+                    userToCall: selectedUser._id,
+                    from: authUser._id,
+                  });
+                }}
                 className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow-lg"
               >
                 <IoCall size={20} />
@@ -120,9 +126,7 @@ const MessageContainer = () => {
               ) : (
                 <>
                   {isTyping && (
-                    <p className="text-sm text-gray-200 px-4 py-1">
-                      Typing...
-                    </p>
+                    <p className="text-sm text-gray-200 px-4 py-1">Typing...</p>
                   )}
 
                   <Messages />
