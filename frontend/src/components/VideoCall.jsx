@@ -139,14 +139,22 @@ const VideoCall = () => {
   // ❌ hide when no call
   if (!callAccepted && !incomingCall) return null;
 
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") {
+        leaveCall();
+      }
+    };
+
+    window.addEventListener("keydown", handleEsc);
+
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+    };
+  }, []);
+
   return (
-    <div
-      className={`fixed top-0 left-0 z-50 bg-black flex items-center justify-center transition-all duration-300 ${
-        isFullScreen
-          ? "w-screen h-screen"
-          : "w-[400px] h-[300px] bottom-4 right-4 rounded-xl"
-      }`}
-    >
+    <div className="fixed top-0 left-0 w-screen h-screen bg-black z-[999] flex items-center justify-center">
       {/* 🎥 REMOTE VIDEO */}
       <video
         ref={myVideo}

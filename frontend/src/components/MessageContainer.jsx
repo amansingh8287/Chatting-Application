@@ -121,17 +121,13 @@ const MessageContainer = () => {
 
             {/* MAIN AREA */}
             <div className="flex-1 overflow-y-auto">
-              {callAccepted ? (
-                <VideoCall />
-              ) : (
-                <>
-                  {isTyping && (
-                    <p className="text-sm text-gray-200 px-4 py-1">Typing...</p>
-                  )}
+              <>
+                {isTyping && (
+                  <p className="text-sm text-gray-200 px-4 py-1">Typing...</p>
+                )}
 
-                  <Messages />
-                </>
-              )}
+                <Messages />
+              </>
             </div>
 
             {!callAccepted && <SendInput />}
