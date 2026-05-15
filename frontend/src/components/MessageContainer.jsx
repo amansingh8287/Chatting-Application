@@ -79,7 +79,7 @@ const MessageContainer = () => {
             {/* MAIN */}
             <div className="flex-1 overflow-y-auto relative">
               {/* ✅ VideoCall only when needed */}
-              {callAccepted === true || callTrigger === true ? (
+              {callAccepted === true || (callTrigger === true && selectedUser) ? (
                 <VideoCall startCallTrigger={callTrigger} />
               ) : (
                 <>

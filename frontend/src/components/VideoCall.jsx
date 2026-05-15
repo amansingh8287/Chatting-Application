@@ -21,17 +21,19 @@ const VideoCall = () => {
   const [stream, setStream] = useState(null);
 
   // 🎥 CAMERA
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((s) => {
-        setStream(s);
-        if (myVideo.current) {
-          myVideo.current.srcObject = s;
-        }
-      })
-      .catch((err) => console.log("Camera error:", err));
-  }, []);
+ useEffect(() => {
+  if (!callAccepted && !incomingCall) return;
+
+  navigator.mediaDevices
+    .getUserMedia({ video: true, audio: true })
+    .then((s) => {
+      setStream(s);
+      if (myVideo.current) {
+        myVideo.current.srcObject = s;
+      }
+    })
+    .catch((err) => console.log("Camera error:", err));
+}, [callAccepted, incomingCall]);
 
   // 📞 START CALL (BUTTON CLICK)
   const startCall = () => {
@@ -99,6 +101,13 @@ const VideoCall = () => {
 
     peerRef.current = peer;
   };
+
+  useEffect(() => {
+  if (startCallTrigger) {
+    console.log("🚀 TRIGGERED START CALL");
+    startCall();
+  }
+}, [startCallTrigger]);
 
   // 📲 RECEIVER SIDE
   useEffect(() => {
