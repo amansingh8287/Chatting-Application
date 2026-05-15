@@ -10,7 +10,7 @@ import { IoCall } from "react-icons/io5";
 
 const MessageContainer = () => {
   const { selectedUser, authUser, onlineUsers, callAccepted } = useSelector(
-    (store) => store.user
+    (store) => store.user,
   );
 
   const { isTyping } = useGetRealTimeMessage();
@@ -26,6 +26,13 @@ const MessageContainer = () => {
 
     return () => socket?.off("typing");
   }, []);
+
+  
+  useEffect(() => {
+    if (!callAccepted) {
+      setCallTrigger(false);
+    }
+  }, [callAccepted]);
 
   return (
     <>
@@ -59,7 +66,7 @@ const MessageContainer = () => {
 
               {/* CALL BUTTON */}
               <button
-                onClick={() => setCallTrigger((prev) => !prev)}
+                onClick={() => setCallTrigger(true)}
                 className="bg-green-500 p-2 rounded-full text-white"
               >
                 <IoCall />
@@ -68,14 +75,15 @@ const MessageContainer = () => {
 
             {/* MAIN */}
             <div className="flex-1 overflow-y-auto relative">
-              <VideoCall />
+              {/* ✅ VideoCall only when needed */}
+              {(callAccepted || callTrigger) && (
+                <VideoCall startCallTrigger={callTrigger} />
+              )}
 
-              {!callAccepted && (
+              {!callAccepted && !callTrigger && (
                 <>
                   {isTyping && (
-                    <p className="text-sm text-gray-200 px-4 py-1">
-                      Typing...
-                    </p>
+                    <p className="text-sm text-gray-200 px-4 py-1">Typing...</p>
                   )}
                   <Messages />
                 </>
@@ -90,9 +98,7 @@ const MessageContainer = () => {
           <h1 className="text-4xl text-white font-bold">
             Hi, {authUser?.fullName}
           </h1>
-          <h1 className="text-2xl text-white">
-            Let's start conversation
-          </h1>
+          <h1 className="text-2xl text-white">Let's start conversation</h1>
         </div>
       )}
     </>

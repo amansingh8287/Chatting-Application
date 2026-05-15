@@ -51,11 +51,10 @@ function App() {
 
     socket.on("incomingCall", (data) => {
       console.log("Incoming Call:", data);
-      if (!data.signal) {
-        console.log("❌ signal missing, ignoring...");
-        return;
+
+      if (data.signal) {
+        dispatch(setIncomingCall(data));
       }
-      dispatch(setIncomingCall(data));
     });
 
     socket.on("callEnded", () => {

@@ -102,71 +102,45 @@ const VideoCall = () => {
 
   // 📲 RECEIVER SIDE
   useEffect(() => {
-    if (incomingCall && stream) {
-      if (isCallActive.current) {
-        console.log("⚠️ Receiver already has call");
-        return;
+  if (incomingCall && stream) {
+
+    if (isCallActive.current) return;
+
+    isCallActive.current = true;
+
+    console.log("📡 RECEIVER START");
+
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream,
+      config: { iceServers: [...] },
+    });
+
+    peer.on("signal", (data) => {
+      socket.emit("answerCall", {
+        signal: data,
+        to: incomingCall.from,
+      });
+    });
+
+    peer.on("stream", (remoteStream) => {
+      console.log("🔥 RECEIVER GOT STREAM"); // 🔥 IMPORTANT
+      if (userVideo.current) {
+        userVideo.current.srcObject = remoteStream;
       }
+    });
 
-      isCallActive.current = true;
-
-      console.log("📡 RECEIVER START");
-
-      const peer = new Peer({
-        initiator: false,
-        trickle: false,
-        stream,
-        config: {
-          config: {
-            iceServers: [
-              { urls: "stun:stun.l.google.com:19302" },
-
-              {
-                urls: "turn:global.relay.metered.ca:80?transport=tcp",
-                username: "6415341860b6d63d76c2fb2d",
-                credential: "Z/QGU6Qt+BPiQfkw",
-              },
-              {
-                urls: "turn:global.relay.metered.ca:443?transport=tcp",
-                username: "6415341860b6d63d76c2fb2d",
-                credential: "Z/QGU6Qt+BPiQfkw",
-              },
-              {
-                urls: "turn:global.relay.metered.ca:80?transport=udp",
-                username: "6415341860b6d63d76c2fb2d",
-                credential: "Z/QGU6Qt+BPiQfkw",
-              },
-            ],
-          },
-        },
-      });
-
-      peer.on("signal", (data) => {
-        socket.emit("answerCall", {
-          signal: data,
-          to: incomingCall.from,
-        });
-      });
-
-      peer.on("stream", (remoteStream) => {
-        console.log("🔥 RECEIVER GOT STREAM");
-
-        if (userVideo.current) {
-          userVideo.current.srcObject = remoteStream;
-        }
-      });
-
-      peer.on("iceConnectionStateChange", () => {
-        console.log("ICE STATE:", peer._pc.iceConnectionState);
-      });
-
-      if (incomingCall?.signal) {
-        peer.signal(incomingCall.signal);
-      }
-
-      peerRef.current = peer;
+    // 🔥 FIX — ensure signal exists
+    if (incomingCall.signal) {
+      peer.signal(incomingCall.signal);
+    } else {
+      console.log("❌ NO SIGNAL ON RECEIVER");
     }
-  }, [incomingCall, stream]);
+
+    peerRef.current = peer;
+  }
+}, [incomingCall, stream]);
 
   // 📡 CALL ACCEPTED
   useEffect(() => {
