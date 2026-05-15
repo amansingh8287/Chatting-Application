@@ -35,6 +35,16 @@ const VideoCall = ({ startCallTrigger }) => {
           stream.getTracks().forEach((track) => track.stop());
         }
         setStream(s);
+
+        if (peerRef.current) {
+          const sender = peerRef.current._pc
+            .getSenders()
+            .find((s) => s.track?.kind === "video");
+
+          if (sender) {
+            sender.replaceTrack(s.getVideoTracks()[0]);
+          }
+        }
       })
       .catch((err) => console.log(err));
   }, [isFrontCamera]);
