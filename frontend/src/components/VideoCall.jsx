@@ -21,9 +21,7 @@ const VideoCall = ({ startCallTrigger }) => {
   const [stream, setStream] = useState(null);
 
   // 🎥 CAMERA
- useEffect(() => {
-  if (!callAccepted && !incomingCall) return;
-
+  useEffect(() => {
   navigator.mediaDevices
     .getUserMedia({ video: true, audio: true })
     .then((s) => {
@@ -32,8 +30,8 @@ const VideoCall = ({ startCallTrigger }) => {
         myVideo.current.srcObject = s;
       }
     })
-    .catch((err) => console.log("Camera error:", err));
-}, [callAccepted, incomingCall]);
+    .catch((err) => console.log(err));
+}, []);
 
   // 📞 START CALL (BUTTON CLICK)
   const startCall = () => {
@@ -103,73 +101,72 @@ const VideoCall = ({ startCallTrigger }) => {
   };
 
   useEffect(() => {
-  if (startCallTrigger) {
-    console.log("🚀 TRIGGERED START CALL");
-    startCall();
-  }
-}, [startCallTrigger]);
+    if (startCallTrigger && stream) {
+      console.log("🚀 START CALL WITH STREAM READY");
+      startCall();
+    }
+  }, [startCallTrigger, stream]);
 
   // 📲 RECEIVER SIDE
   useEffect(() => {
-  if (incomingCall && stream) {
+    if (incomingCall && stream) {
+      if (isCallActive.current) return;
 
-    if (isCallActive.current) return;
+      isCallActive.current = true;
 
-    isCallActive.current = true;
+      console.log("📡 RECEIVER START");
 
-    console.log("📡 RECEIVER START");
-
-    const peer = new Peer({
-      initiator: false,
-      trickle: false,
-      stream,
-      config: { 
+      const peer = new Peer({
+        initiator: false,
+        trickle: false,
+        stream,
+        config: {
           iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun.l.google.com:19302" },
 
-          {
-            urls: "turn:global.relay.metered.ca:80?transport=tcp",
-            username: "6415341860b6d63d76c2fb2d",
-            credential: "Z/QGU6Qt+BPiQfkw",
-          },
-          {
-            urls: "turn:global.relay.metered.ca:443?transport=tcp",
-            username: "6415341860b6d63d76c2fb2d",
-            credential: "Z/QGU6Qt+BPiQfkw",
-          },
-          {
-            urls: "turn:global.relay.metered.ca:80?transport=udp",
-            username: "6415341860b6d63d76c2fb2d",
-            credential: "Z/QGU6Qt+BPiQfkw",
-          },
-        ],
-       },
-    });
-
-    peer.on("signal", (data) => {
-      socket.emit("answerCall", {
-        signal: data,
-        to: incomingCall.from,
+            {
+              urls: "turn:global.relay.metered.ca:80?transport=tcp",
+              username: "6415341860b6d63d76c2fb2d",
+              credential: "Z/QGU6Qt+BPiQfkw",
+            },
+            {
+              urls: "turn:global.relay.metered.ca:443?transport=tcp",
+              username: "6415341860b6d63d76c2fb2d",
+              credential: "Z/QGU6Qt+BPiQfkw",
+            },
+            {
+              urls: "turn:global.relay.metered.ca:80?transport=udp",
+              username: "6415341860b6d63d76c2fb2d",
+              credential: "Z/QGU6Qt+BPiQfkw",
+            },
+          ],
+        },
       });
-    });
 
-    peer.on("stream", (remoteStream) => {
-      console.log("🔥 RECEIVER GOT STREAM"); // 🔥 IMPORTANT
-      if (userVideo.current) {
-        userVideo.current.srcObject = remoteStream;
+      peer.on("signal", (data) => {
+        socket.emit("answerCall", {
+          signal: data,
+          to: incomingCall.from,
+        });
+      });
+
+      peer.on("stream", (remoteStream) => {
+        console.log("🔥 RECEIVER GOT STREAM"); // 🔥 IMPORTANT
+        if (userVideo.current) {
+          userVideo.current.srcObject = remoteStream;
+        }
+      });
+
+      // 🔥 FIX — ensure signal exists
+      if (incomingCall.signal) {
+        peer.signal(incomingCall.signal);
+      } else {
+        console.log("❌ NO SIGNAL ON RECEIVER");
       }
-    });
 
-    // 🔥 FIX — ensure signal exists
-    if (incomingCall.signal) {
-      peer.signal(incomingCall.signal);
-    } else {
-      console.log("❌ NO SIGNAL ON RECEIVER");
+      peerRef.current = peer;
     }
-
-    peerRef.current = peer;
-  }
-}, [incomingCall, stream]);
+  }, [incomingCall, stream]);
 
   // 📡 CALL ACCEPTED
   useEffect(() => {
