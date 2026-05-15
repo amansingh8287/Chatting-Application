@@ -19,16 +19,25 @@ const VideoCall = ({ startCallTrigger }) => {
   const isCallActive = useRef(false);
 
   const [stream, setStream] = useState(null);
+  const [isFrontCamera, setIsFrontCamera] = useState(true);
 
   // 🎥 CAMERA
   useEffect(() => {
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
+      .getUserMedia({
+        video: {
+          facingMode: isFrontCamera ? "user" : "environment",
+        },
+        audio: true,
+      })
       .then((s) => {
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+        }
         setStream(s);
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [isFrontCamera]);
 
   // 🎥 ATTACH STREAM TO VIDEO
   useEffect(() => {
@@ -223,8 +232,17 @@ const VideoCall = ({ startCallTrigger }) => {
         ref={myVideo}
         autoPlay
         muted
+        playsInline
         className="absolute w-40 h-48 top-4 right-4 rounded-lg border-2 border-white z-50"
       />
+
+      {/* 🔄 CAMERA ROTATE BUTTON */}
+      <button
+        onClick={() => setIsFrontCamera((prev) => !prev)}
+        className="absolute bottom-20 right-6 bg-white p-3 rounded-full shadow z-50"
+      >
+        🔄
+      </button>
 
       {/* START CALL BUTTON */}
       {!incomingCall && !callAccepted && (
