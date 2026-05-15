@@ -39,6 +39,10 @@ const VideoCall = () => {
       return;
     }
 
+    if (peerRef.current) {
+      peerRef.current.destroy();
+    }
+
     console.log("📞 STARTING CALL");
 
     const peer = new Peer({
@@ -47,17 +51,10 @@ const VideoCall = () => {
       stream,
       config: {
         iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-
           {
-            urls: "turn:openrelay.metered.ca:80",
-            username: "openrelayproject",
-            credential: "openrelayproject",
-          },
-          {
-            urls: "turn:openrelay.metered.ca:443",
-            username: "openrelayproject",
-            credential: "openrelayproject",
+            urls: "turn:global.relay.metered.ca:80",
+            username: "6415341860b6d63d76c2fb2d",
+            credential: "Z/QGU6Qt+BPiQfkw",
           },
         ],
       },
@@ -81,12 +78,19 @@ const VideoCall = () => {
       }
     });
 
+    peer.on("iceConnectionStateChange", () => {
+      console.log("ICE STATE:", peer._pc.iceConnectionState);
+    });
+
     peerRef.current = peer;
   };
 
   // 📲 RECEIVER SIDE
   useEffect(() => {
     if (incomingCall && stream) {
+      if (peerRef.current) {
+        peerRef.current.destroy();
+      }
       console.log("📡 RECEIVER START");
 
       const peer = new Peer({
@@ -95,17 +99,10 @@ const VideoCall = () => {
         stream,
         config: {
           iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-
             {
-              urls: "turn:openrelay.metered.ca:80",
-              username: "openrelayproject",
-              credential: "openrelayproject",
-            },
-            {
-              urls: "turn:openrelay.metered.ca:443",
-              username: "openrelayproject",
-              credential: "openrelayproject",
+              urls: "turn:global.relay.metered.ca:80",
+              username: "6415341860b6d63d76c2fb2d",
+              credential: "Z/QGU6Qt+BPiQfkw",
             },
           ],
         },
@@ -124,6 +121,10 @@ const VideoCall = () => {
         if (userVideo.current) {
           userVideo.current.srcObject = remoteStream;
         }
+      });
+
+      peer.on("iceConnectionStateChange", () => {
+        console.log("ICE STATE:", peer._pc.iceConnectionState);
       });
 
       if (incomingCall?.signal) {
