@@ -40,7 +40,8 @@ const VideoCall = () => {
     }
 
     if (peerRef.current) {
-      peerRef.current.destroy();
+      console.log("⚠️ Peer already exists, skipping new one");
+      return;
     }
 
     console.log("📞 STARTING CALL");
@@ -51,9 +52,8 @@ const VideoCall = () => {
       stream,
       config: {
         iceServers: [
-
           { urls: "stun:stun.l.google.com:19302" },
-          
+
           {
             urls: "turn:global.relay.metered.ca:80?transport=tcp",
             username: "6415341860b6d63d76c2fb2d",
@@ -102,7 +102,8 @@ const VideoCall = () => {
   useEffect(() => {
     if (incomingCall && stream) {
       if (peerRef.current) {
-        peerRef.current.destroy();
+        console.log("⚠️ Peer already exists (receiver), skipping");
+        return;
       }
       console.log("📡 RECEIVER START");
 
