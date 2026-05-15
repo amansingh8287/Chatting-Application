@@ -114,7 +114,27 @@ const VideoCall = () => {
       initiator: false,
       trickle: false,
       stream,
-      config: { iceServers: [...] },
+      config: { 
+          iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+
+          {
+            urls: "turn:global.relay.metered.ca:80?transport=tcp",
+            username: "6415341860b6d63d76c2fb2d",
+            credential: "Z/QGU6Qt+BPiQfkw",
+          },
+          {
+            urls: "turn:global.relay.metered.ca:443?transport=tcp",
+            username: "6415341860b6d63d76c2fb2d",
+            credential: "Z/QGU6Qt+BPiQfkw",
+          },
+          {
+            urls: "turn:global.relay.metered.ca:80?transport=udp",
+            username: "6415341860b6d63d76c2fb2d",
+            credential: "Z/QGU6Qt+BPiQfkw",
+          },
+        ],
+       },
     });
 
     peer.on("signal", (data) => {
