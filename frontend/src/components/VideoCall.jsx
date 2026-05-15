@@ -5,7 +5,7 @@ import { getSocket } from "../socket";
 import { endCall, acceptCall } from "../redux/userSlice";
 import { IoCall } from "react-icons/io5";
 
-const VideoCall = () => {
+const VideoCall = ({ startCallTrigger }) => {
   const { selectedUser, incomingCall, callAccepted, authUser } = useSelector(
     (s) => s.user,
   );
