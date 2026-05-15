@@ -3,7 +3,7 @@ import OtherUser from './OtherUser';
 import useGetOtherUsers from '../hooks/useGetOtherUsers';
 import { useSelector } from "react-redux";
 
-const OtherUsers = () => {
+const OtherUsers = ({setShowChat}) => {
     useGetOtherUsers();
 
     const { users, onlineUsers } = useSelector(store => store.user);
@@ -21,7 +21,8 @@ const OtherUsers = () => {
                             <OtherUser 
                                 key={user._id} 
                                 user={user} 
-                                isOnline={isOnline}   // 🔥 IMPORTANT
+                                isOnline={isOnline} 
+                                setShowChat={setShowChat}  // 🔥 IMPORTANT
                             />
                         );
                     })

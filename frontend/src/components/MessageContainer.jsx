@@ -8,16 +8,23 @@ import useGetRealTimeMessage from "../hooks/useGetRealTimeMessage";
 import VideoCall from "./VideoCall";
 import { IoCall } from "react-icons/io5";
 
-const MessageContainer = () => {
+const MessageContainer = ({showChat, setShowChat}) => {
   const { selectedUser, authUser, onlineUsers, callAccepted } = useSelector(
     (store) => store.user,
   );
 
+  const [showChat, setShowChat] = useState(false);
   const { isTyping } = useGetRealTimeMessage();
   const isOnline = onlineUsers?.includes(selectedUser?._id);
 
   const socket = getSocket();
   const [callTrigger, setCallTrigger] = useState(false);
+
+  useEffect(() => {
+    if (selectedUser) {
+      setShowChat(true); // mobile me chat open
+    }
+  }, [selectedUser]);
 
   useEffect(() => {
     socket?.on("typing", () => {
@@ -53,12 +60,23 @@ const MessageContainer = () => {
           <div className="relative z-10 flex flex-col h-full">
             {/* HEADER */}
             <div className="flex justify-between items-center px-4 py-2 bg-white/20 backdrop-blur-md border-b border-white/20 text-black">
+              {/* LEFT SIDE */}
               <div className="flex gap-2 items-center">
+                {/* 🔙 BACK BUTTON (ONLY MOBILE) */}
+                <button
+                  onClick={() => setShowChat(false)}
+                  className="md:hidden text-xl mr-1"
+                >
+                  ←
+                </button>
+
+                {/* PROFILE IMAGE */}
                 <img
                   src={selectedUser?.profilePhoto}
                   className="w-10 h-10 rounded-full"
                 />
 
+                {/* NAME + STATUS */}
                 <div className="flex flex-col">
                   <p className="font-semibold">{selectedUser?.fullName}</p>
                   <span className="text-xs text-green-600">
@@ -67,9 +85,11 @@ const MessageContainer = () => {
                 </div>
               </div>
 
-              {/* CALL BUTTON */}
+              {/* 📞 CALL BUTTON */}
               <button
-                onClick={() => {setCallTrigger(true)}}
+                onClick={() => {
+                  setCallTrigger(true);
+                }}
                 className="bg-green-500 p-2 rounded-full text-white"
               >
                 <IoCall />
@@ -79,7 +99,8 @@ const MessageContainer = () => {
             {/* MAIN */}
             <div className="flex-1 overflow-y-auto relative">
               {/* ✅ VideoCall only when needed */}
-              {callAccepted === true || (callTrigger === true && selectedUser) ? (
+              {callAccepted === true ||
+              (callTrigger === true && selectedUser) ? (
                 <VideoCall startCallTrigger={callTrigger} />
               ) : (
                 <>

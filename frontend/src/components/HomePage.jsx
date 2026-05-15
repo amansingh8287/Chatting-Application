@@ -3,10 +3,12 @@ import Sidebar from "./Sidebar";
 import MessageContainer from "./MessageContainer";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import VideoCall from "./VideoCall";
 
 const HomePage = () => {
   const { authUser } = useSelector((store) => store.user);
+  const [showChat, setShowChat] = useState(false);
   const navigate = useNavigate();
   const { callAccepted } = useSelector((store) => store.user);
   useEffect(() => {
@@ -26,15 +28,16 @@ const HomePage = () => {
     // </div>
 
     <div className="h-screen w-full flex overflow-hidden">
-      {!callAccepted && (
-        <div className="w-[300px]">
-          <Sidebar />
-        </div>
-      )}
 
-      <div className="flex-1">
-        <MessageContainer />
-      </div>
+    {/* SIDEBAR */}
+    <div className={`w-full md:w-[300px] ${showChat ? "hidden md:block" : "block"}`}>
+      <Sidebar setShowChat={setShowChat} />
+    </div>
+
+    {/* CHAT */}
+    <div className={`flex-1 ${showChat ? "block" : "hidden md:block"}`}>
+      <MessageContainer showChat={showChat} setShowChat={setShowChat} />
+    </div>
     </div>
   );
 };

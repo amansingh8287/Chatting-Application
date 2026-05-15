@@ -6,13 +6,17 @@ import {
   setShowProfile,
 } from "../redux/userSlice";
 
-const OtherUser = ({ user, isOnline }) => {
+const OtherUser = ({ user, isOnline , setShowChat }) => {
   const dispatch = useDispatch();
   const { selectedUser } = useSelector((store) => store.user);
 
   const selectedUserHandler = () => {
     dispatch(setSelectedUser(user));
     dispatch(setShowProfile(true));
+
+    if (window.innerWidth < 768) {
+      setShowChat(true); // mobile only
+    }
   };
 
   return (

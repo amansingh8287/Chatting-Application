@@ -75,7 +75,7 @@ import { setAuthUser, setOtherUsers, setSelectedUser } from '../redux/userSlice'
 import { clearMessages } from "../redux/messageSlice";
 import { BASE_URL } from '..';
 
-const Sidebar = () => {
+const Sidebar = ({setShowChat}) => {
     const [search, setSearch] = useState("");
 
     // ✅ ADD THIS
