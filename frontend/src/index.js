@@ -9,9 +9,11 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { persistStore } from 'redux-persist';
 import axios from "axios";
 import process from "process";
+import { Buffer } from "buffer";
 
 window.global = window;
 window.process = process;
+window.Buffer = Buffer;
 
 axios.defaults.withCredentials = true;
 
