@@ -16,6 +16,7 @@ const VideoCall = () => {
   const myVideo = useRef();
   const userVideo = useRef();
   const peerRef = useRef();
+  const isCallActive = useRef(false);
 
   const [stream, setStream] = useState(null);
 
@@ -39,10 +40,11 @@ const VideoCall = () => {
       return;
     }
 
-    if (peerRef.current) {
-      console.log("⚠️ Peer already exists, skipping new one");
+    if (isCallActive.current) {
+      console.log("⚠️ Call already active");
       return;
     }
+    isCallActive.current = true;
 
     console.log("📞 STARTING CALL");
 
@@ -101,10 +103,13 @@ const VideoCall = () => {
   // 📲 RECEIVER SIDE
   useEffect(() => {
     if (incomingCall && stream) {
-      if (peerRef.current) {
-        console.log("⚠️ Peer already exists (receiver), skipping");
+      if (isCallActive.current) {
+        console.log("⚠️ Receiver already has call");
         return;
       }
+
+      isCallActive.current = true;
+
       console.log("📡 RECEIVER START");
 
       const peer = new Peer({
@@ -176,6 +181,7 @@ const VideoCall = () => {
       dispatch(acceptCall());
     };
 
+    socket.off("callAccepted");
     socket.on("callAccepted", handleCallAccepted);
 
     return () => socket.off("callAccepted", handleCallAccepted);
@@ -184,6 +190,10 @@ const VideoCall = () => {
   // ❌ END CALL
   const leaveCall = () => {
     peerRef.current?.destroy();
+
+    peerRef.current = null;
+
+    isCallActive.current = false;
     dispatch(endCall());
 
     socket.emit("endCall", {
