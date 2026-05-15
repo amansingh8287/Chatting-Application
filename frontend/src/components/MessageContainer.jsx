@@ -13,7 +13,6 @@ const MessageContainer = ({showChat, setShowChat}) => {
     (store) => store.user,
   );
 
-  const [showChat, setShowChat] = useState(false);
   const { isTyping } = useGetRealTimeMessage();
   const isOnline = onlineUsers?.includes(selectedUser?._id);
 
