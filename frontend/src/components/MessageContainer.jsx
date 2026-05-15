@@ -27,7 +27,10 @@ const MessageContainer = () => {
     return () => socket?.off("typing");
   }, []);
 
-  
+  useEffect(() => {
+    setCallTrigger(false); // 🔥 RESET
+  }, [selectedUser]);
+
   useEffect(() => {
     if (!callAccepted) {
       setCallTrigger(false);
@@ -76,11 +79,9 @@ const MessageContainer = () => {
             {/* MAIN */}
             <div className="flex-1 overflow-y-auto relative">
               {/* ✅ VideoCall only when needed */}
-              {(callAccepted || callTrigger) && (
+              {callAccepted === true || callTrigger === true ? (
                 <VideoCall startCallTrigger={callTrigger} />
-              )}
-
-              {!callAccepted && !callTrigger && (
+              ) : (
                 <>
                   {isTyping && (
                     <p className="text-sm text-gray-200 px-4 py-1">Typing...</p>
