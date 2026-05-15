@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react'
-import Sidebar from './Sidebar'
-import MessageContainer from './MessageContainer'
-import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect } from "react";
+import Sidebar from "./Sidebar";
+import MessageContainer from "./MessageContainer";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import VideoCall from "./VideoCall";
 
 const HomePage = () => {
-  const { authUser } = useSelector(store => store.user);
+  const { authUser } = useSelector((store) => store.user);
   const navigate = useNavigate();
   const { callAccepted } = useSelector((store) => store.user);
   useEffect(() => {
@@ -15,22 +15,16 @@ const HomePage = () => {
     }
   }, []);
   return (
-  <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden">
-    {callAccepted ? (
-      <VideoCall />
-    ) : (
-      <>
-        <div className="w-full md:w-[300px] h-[45%] md:h-full">
-          <Sidebar />
-        </div>
+    <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden">
+      <div className="w-full md:w-[300px] h-[45%] md:h-full">
+        <Sidebar />
+      </div>
 
-        <div className="flex-1 h-[55%] md:h-full">
-          <MessageContainer />
-        </div>
-      </>
-    )}
-  </div>
- );
-}
+      <div className="flex-1 h-[55%] md:h-full">
+        <MessageContainer />
+      </div>
+    </div>
+  );
+};
 
-export default HomePage
+export default HomePage;

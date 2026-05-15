@@ -69,7 +69,7 @@ const MessageContainer = () => {
 
               {/* CALL BUTTON */}
               <button
-                onClick={() => setCallTrigger(true)}
+                onClick={() => {setCallTrigger(true)}}
                 className="bg-green-500 p-2 rounded-full text-white"
               >
                 <IoCall />

@@ -41,7 +41,6 @@ const userSlice = createSlice({
     },
     acceptCall: (state) => {
       state.callAccepted = true;
-      state.incomingCall = null;
     },
     endCall: (state) => {
       state.callEnded = true;
