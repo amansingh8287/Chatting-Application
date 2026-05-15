@@ -15,12 +15,24 @@ const HomePage = () => {
     }
   }, []);
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden">
-      <div className="w-full md:w-[300px] h-[45%] md:h-full">
-        <Sidebar />
-      </div>
+    // <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden">
+    //   <div className="w-full md:w-[300px] h-[45%] md:h-full">
+    //     <Sidebar />
+    //   </div>
 
-      <div className="flex-1 h-[55%] md:h-full">
+    //   <div className="flex-1 h-[55%] md:h-full">
+    //     <MessageContainer />
+    //   </div>
+    // </div>
+
+    <div className="h-screen w-full flex overflow-hidden">
+      {!callAccepted && (
+        <div className="w-[300px]">
+          <Sidebar />
+        </div>
+      )}
+
+      <div className="flex-1">
         <MessageContainer />
       </div>
     </div>
