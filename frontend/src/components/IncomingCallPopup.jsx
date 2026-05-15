@@ -4,11 +4,13 @@ import { acceptCall, endCall } from "../redux/userSlice";
 import { getSocket } from "../socket";
 
 const IncomingCallPopup = () => {
-  const { incomingCall } = useSelector((s) => s.user);
+  // const { incomingCall } = useSelector((s) => s.user);
+  const { incomingCall, callAccepted } = useSelector((s) => s.user);
   const dispatch = useDispatch();
   const socket = getSocket();
 
-  if (!incomingCall) return null;
+  // if (!incomingCall) return null;
+  if (!incomingCall || callAccepted) return null;
 
   return (
     <div className="fixed inset-0 bg-black/70 flex justify-center items-center">

@@ -215,7 +215,7 @@ const VideoCall = ({ startCallTrigger }) => {
         ref={userVideo}
         autoPlay
         playsInline
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover z-0"
       />
 
       {/* MY VIDEO */}
@@ -223,7 +223,7 @@ const VideoCall = ({ startCallTrigger }) => {
         ref={myVideo}
         autoPlay
         muted
-        className="absolute w-40 h-48 top-4 right-4 rounded-lg border-2 border-white"
+        className="absolute w-40 h-48 top-4 right-4 rounded-lg border-2 border-white z-50"
       />
 
       {/* START CALL BUTTON */}
