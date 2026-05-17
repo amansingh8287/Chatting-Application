@@ -150,7 +150,7 @@ npm start
 
 ## 📱 Live Demo
 
-👉 https://chatting-application-eight.vercel.app
+👉https://chatting-application-4yur.vercel.app/
 
 ---
 
