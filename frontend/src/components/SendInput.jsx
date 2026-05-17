@@ -57,7 +57,7 @@ const SendInput = () => {
           recognition.stop();
           setIsListening(false);
           isListeningRef.current = false;
-        }, 1500);
+        }, 3000);
       };
 
       recognition.onend = () => {
@@ -128,7 +128,7 @@ const SendInput = () => {
       recognition.stop();
       setIsListening(false);
       isListeningRef.current = false;
-    }, 1500);
+    }, 3000);
   };
 
   const handleTyping = (value) => {
