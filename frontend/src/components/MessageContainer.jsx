@@ -8,7 +8,7 @@ import useGetRealTimeMessage from "../hooks/useGetRealTimeMessage";
 import VideoCall from "./VideoCall";
 import { IoCall } from "react-icons/io5";
 
-const MessageContainer = ({showChat, setShowChat}) => {
+const MessageContainer = ({ showChat, setShowChat }) => {
   const { selectedUser, authUser, onlineUsers, callAccepted } = useSelector(
     (store) => store.user,
   );
@@ -78,8 +78,8 @@ const MessageContainer = ({showChat, setShowChat}) => {
                 {/* NAME + STATUS */}
                 <div className="flex flex-col">
                   <p className="font-semibold">{selectedUser?.fullName}</p>
-                  <span className="text-xs text-green-600">
-                    {isOnline ? "Online" : "Offline"}
+                  <span className={`text-xs ${isTyping ? "text-green-400" : "text-green-600"}`}>
+                    {isTyping ? "Typing..." : isOnline ? "Online" : "Offline"}
                   </span>
                 </div>
               </div>
@@ -103,9 +103,6 @@ const MessageContainer = ({showChat, setShowChat}) => {
                 <VideoCall startCallTrigger={callTrigger} />
               ) : (
                 <>
-                  {isTyping && (
-                    <p className="text-sm text-gray-200 px-4 py-1">Typing...</p>
-                  )}
                   <Messages />
                 </>
               )}
